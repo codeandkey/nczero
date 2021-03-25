@@ -1,4 +1,4 @@
-# This class contains the neural network and provides methods for evaluating and training.
+#!/usr/bin/python
 
 import os
 import numpy as np
