@@ -38,13 +38,7 @@ namespace neocortex {
              * @param parent parent node
              * @param action node decision
              */
-            node(shared_ptr<node> parent, int action);
-
-            /**
-             * Constructs a new root node.
-             * @return shared_ptr to new root
-             */
-            static shared_ptr<node> make_root();
+            node(shared_ptr<node> parent = nullptr, int action = chess::move::null());
 
             /**
              * Checks if the node is claimed.

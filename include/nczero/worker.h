@@ -24,20 +24,23 @@ namespace neocortex {
         public:
             worker(int bsize = DEFAULT_BATCH_SIZE);
             
-            void start(node* root, chess::position& rootpos);
+            void start(shared_ptr<node>& root, chess::position& rootpos);
             void stop();
+            void join();
             void set_batch_size(int bsize);
 
-            struct Status {
-                std::string code;
-                int batch_count, node_count, batch_avg, exec_avg;
+            struct status {
+                std::string code = "uninitialized";
+                int batch_count = 0, node_count = 0, batch_avg = 0, exec_avg = 0;
             };
+
+            status get_status();
         private:
             void make_batch(shared_ptr<node>& root, int allocated);
 
             atomic<bool> running;
 
-            Status status;
+            status current_status;
             mutex status_mutex;
 
             chess::position pos;

@@ -23,6 +23,8 @@
 
 #define MAX_BATCH_SIZE 256
 #define MAX_ND_PLY 1024
+#define DEFAULT_MOVE_FRAC 10
+#define DEFAULT_MOVE_TIME 5000
 
 using namespace neocortex;
 using namespace std;
@@ -72,6 +74,18 @@ int main(int argc, char** argv) {
 	cout << "option name Batch type spin default " << pool::get_batch_size() << " min 1 max " << MAX_BATCH_SIZE << "\n";
 	cout << "option name NDPly type spin default -1 min -1 max " << MAX_ND_PLY << "\n";
 	cout << "uciok\n";
+
+	shared_ptr<nn::Network> model;
+
+	try {
+		model = make_shared<nn::Network>("models/latest");
+	} catch(std::exception& e) { 
+		neocortex_error("Failed to load model: %s\n", e.what());
+		return 1;
+	}
+
+	chess::position pos;
+	shared_ptr<node> search_tree = make_shared<node>();
 
 	string line;
 	while (getline(cin, line)) {
@@ -136,6 +150,54 @@ int main(int argc, char** argv) {
 		}
 
 		if (args[0] == "go") {
+			// Parse arguments
+
+			int move_time = -1;
+			int wtime = -1, btime = -1;
+			int ourtime = (pos.get_color_to_move() == chess::color::WHITE) ? wtime : btime;
+
+			for (int i = 1; i < args.size(); ++i) {
+				auto parse_arg = [&](string a, int* dst) {
+					if (i + 1 >= args.size()) {
+						neocortex_error("go(%s): expected argument", a.c_str());
+						return;
+					}
+
+					try {
+						*dst = stoi(args[i + 1]);
+					} catch (exception& e) {
+						neocortex_error("go(%s): %s", a.c_str(), e.what());
+					}
+				};
+
+				if (args[i] == "movetime") {
+					parse_arg("movetime", &move_time);
+					continue;
+				}
+
+				if (args[i] == "wtime") {
+					parse_arg("wtime", &wtime);
+					continue;
+				}
+			
+				if (args[i] == "btime") {
+					parse_arg("btime", &btime);
+					continue;
+				}
+
+				neocortex_warn("go: unsupported option %s", args[i].c_str());
+			}
+
+			if (move_time == -1 && ourtime != -1) {
+				move_time = ourtime / DEFAULT_MOVE_FRAC;
+			}
+
+			if (move_time == -1) {
+				move_time = DEFAULT_MOVE_TIME;
+			}
+
+			int action = pool::search(search_tree, move_time, model, pos, true);
+
 			continue;
 		}
 

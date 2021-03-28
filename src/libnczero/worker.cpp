@@ -8,13 +8,24 @@ worker::worker(int bsize) {
     set_batch_size(bsize);
 }
 
-void worker::start(node* root, chess::position& rootpos) {
+void worker::start(shared_ptr<node>& root, chess::position& rootpos) {
     pos = rootpos;
     running = true;
+
+    // Placeholder worker
+    worker_thread = thread([&](worker* self) {
+        while (running) {
+            this_thread::sleep_for(chrono::duration<int, std::milli>(50));
+        }
+    }, this);
 }
 
 void worker::stop() {
     running = false;
+}
+
+void worker::join() {
+    worker_thread.join();
 }
 
 void worker::set_batch_size(int bsize) {
@@ -33,7 +44,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
     if (root->backprop_terminal()) {
         // Update node count
         status_mutex.lock();
-        ++status.node_count;
+        ++current_status.node_count;
         status_mutex.unlock();
 
         return;
@@ -45,7 +56,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
 
         // Update node count
         status_mutex.lock();
-        ++status.node_count;
+        ++current_status.node_count;
         status_mutex.unlock();
 
         return;
@@ -90,7 +101,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
 
         // Update node count
         status_mutex.lock();
-        ++status.node_count;
+        ++current_status.node_count;
         status_mutex.unlock();
 
         return;
@@ -103,3 +114,12 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
     ++current_batch_size;
 }
 
+worker::status worker::get_status() {
+    status output;
+
+    status_mutex.lock();
+    output = current_status;
+    status_mutex.unlock();
+
+    return output;
+}
