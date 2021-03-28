@@ -1,3 +1,4 @@
+#include <c10/util/Exception.h>
 #include <nczero/net.h>
 
 #include <filesystem>
@@ -16,7 +17,6 @@ std::vector<Network::Output> Network::evaluate(std::vector<float>& inp_board, st
 	inputs.push_back(std::move(torch::from_blob(&inp_lmm[0], {batch_size, 4096}, at::kFloat)));
 
 	auto output_tuple = module.forward(inputs).toTuple();
-
 	auto output_policy = output_tuple->elements()[0].toTensor();
 	auto output_value = output_tuple->elements()[1].toTensor();
 

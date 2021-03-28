@@ -1,47 +1,50 @@
 set (
     SOURCES
-    attacks.cpp
-    bitboard.cpp
-    board.cpp
-    color.cpp
-    move.cpp
+    chess/attacks.cpp
+    chess/bitboard.cpp
+    chess/board.cpp
+    chess/color.cpp
+    chess/move.cpp
+    chess/perft.cpp
+    chess/piece.cpp
+    chess/position.cpp
+    chess/square.cpp
+    chess/type.cpp
+    chess/zobrist.cpp
+    log.cpp
     net.cpp
-    perft.cpp
-    piece.cpp
-    position.cpp
-    search.cpp
-    square.cpp
-    type.cpp
+    node.cpp
+    pool.cpp
     util.cpp
-    zobrist.cpp
+    worker.cpp
 )
 
 set (INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 set (
     HEADERS
-    ${INCLUDE_DIR}/nczero/attacks.h
-    ${INCLUDE_DIR}/nczero/bitboard.h
-    ${INCLUDE_DIR}/nczero/board.h
-    ${INCLUDE_DIR}/nczero/color.h
-    ${INCLUDE_DIR}/nczero/move.h
+    ${INCLUDE_DIR}/nczero/chess/attacks.h
+    ${INCLUDE_DIR}/nczero/chess/bitboard.h
+    ${INCLUDE_DIR}/nczero/chess/board.h
+    ${INCLUDE_DIR}/nczero/chess/color.h
+    ${INCLUDE_DIR}/nczero/chess/move.h
+    ${INCLUDE_DIR}/nczero/chess/perft.h
+    ${INCLUDE_DIR}/nczero/chess/piece.h
+    ${INCLUDE_DIR}/nczero/chess/position.h
+    ${INCLUDE_DIR}/nczero/chess/square.h
+    ${INCLUDE_DIR}/nczero/chess/type.h
+    ${INCLUDE_DIR}/nczero/chess/zobrist.h
+    ${INCLUDE_DIR}/nczero/log.h
     ${INCLUDE_DIR}/nczero/net.h
-    ${INCLUDE_DIR}/nczero/perft.h
-    ${INCLUDE_DIR}/nczero/piece.h
-    ${INCLUDE_DIR}/nczero/position.h
-    ${INCLUDE_DIR}/nczero/search.h
-    ${INCLUDE_DIR}/nczero/square.h
-    ${INCLUDE_DIR}/nczero/type.h
+    ${INCLUDE_DIR}/nczero/node.h
+    ${INCLUDE_DIR}/nczero/pool.h
     ${INCLUDE_DIR}/nczero/util.h
-    ${INCLUDE_DIR}/nczero/zobrist.h
+    ${INCLUDE_DIR}/nczero/worker.h
 )
 
-add_library (nczero ${SOURCES} ${HEADERS})
-target_include_directories (nczero PRIVATE ${INCLUDE_DIR})
+add_library (libnczero ${SOURCES} ${HEADERS})
+target_include_directories (libnczero PRIVATE ${INCLUDE_DIR})
 
-# Find libtorch
-set (CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/torch_cmake)
-find_package (Torch REQUIRED)
-target_include_directories (nczero PRIVATE ${TORCH_INCLUDE_DIRS})
-target_link_libraries (nczero ${TORCH_LIBRARIES})
-add_compile_options (${TORCH_CXX_FLAGS})
+target_include_directories (libnczero PRIVATE ${TORCH_INCLUDE_DIRS})
+target_link_libraries (libnczero ${TORCH_LIBRARIES})
+
