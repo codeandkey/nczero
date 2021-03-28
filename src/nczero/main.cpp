@@ -22,8 +22,10 @@
 #include <cerrno>
 
 #define MAX_BATCH_SIZE 256
+#define MAX_ND_PLY 1024
 
 using namespace neocortex;
+using namespace std;
 
 int train();
 
@@ -36,45 +38,49 @@ int main(int argc, char** argv) {
 
 	neocortex_info(NEOCORTEX_NAME " " NEOCORTEX_VERSION " " NEOCORTEX_BUILDTIME " " NEOCORTEX_DEBUG_STR "\n");
 
-	auto model_dir = std::filesystem::path("models");
-	auto games_dir = std::filesystem::path("games");
+	auto model_dir = filesystem::path("models");
+	auto games_dir = filesystem::path("games");
 
-	std::filesystem::create_directories(model_dir);
-	std::filesystem::create_directories(games_dir);
+	filesystem::create_directories(model_dir);
+	filesystem::create_directories(games_dir);
 
 	chess::bb::init();
 	chess::zobrist::init();
 	chess::attacks::init();
 
+	const size_t max_threads = thread::hardware_concurrency();
+
+	pool::init(max_threads);
+
 	// start uci
-	std::string mode;
-	std::getline(std::cin, mode);
+	string mode;
+	getline(cin, mode);
 
 	if (mode == "train") {
 		 return train();
 	}
 
 	if (mode != "uci") {
-		std::cout << "Unknown mode '" << mode << "'.";
+		cout << "Unknown mode '" << mode << "'.";
 		return 1;
 	}
 
-	std::cout << "id name neocortex 2.0\n";
-	std::cout << "id author Justin Stanley\n";
+	cout << "id name neocortex 2.0\n";
+	cout << "id author Justin Stanley\n";
 
-	std::cout << "option name Threads type spin default " << pool::get_num_threads() << " min 1 max " << pool::get_num_threads() << "\n";
-	std::cout << "option name Batch type spin default " << pool::get_batch_size() << " min 1 max " << MAX_BATCH_SIZE << "\n";
-	std::cout << "option name NDPly type spin default -1 min -1 max 1024\n";
-	std::cout << "uciok\n";
+	cout << "option name Threads type spin default " << pool::get_num_threads() << " min 1 max " << pool::get_num_threads() << "\n";
+	cout << "option name Batch type spin default " << pool::get_batch_size() << " min 1 max " << MAX_BATCH_SIZE << "\n";
+	cout << "option name NDPly type spin default -1 min -1 max " << MAX_ND_PLY << "\n";
+	cout << "uciok\n";
 
-	std::string line;
-	while (std::getline(std::cin, line)) {
+	string line;
+	while (getline(cin, line)) {
 
-		std::vector<std::string> args;
-		std::istringstream f(line);
-		std::string arg;
+		vector<string> args;
+		istringstream f(line);
+		string arg;
 
-		while (std::getline(f, arg, ' ')) {
+		while (getline(f, arg, ' ')) {
 			if (arg.size()) {
 				args.push_back(arg);
 			}
@@ -84,32 +90,37 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
+		if (args[0] == "isready") {
+			cout << "readyok\n";
+			continue;
+		}
+
 		if (args[0] == "setoption") {
 			if (args.size() < 5) {
 				neocortex_error("setoption: expected 4 arguments, read %d\n", args.size() - 1);
 			}
 
-			if (args[1] != "Name") {
-				neocortex_error("setoption: expected Name, read '%s'\n", args[1].c_str());
+			if (args[1] != "name") {
+				neocortex_error("setoption: expected name, read '%s'\n", args[1].c_str());
 				continue;
 			}
 
-			if (args[3] != "Value") {
-				neocortex_error("setoption: expected Value, read '%s'\n", args[3].c_str());
+			if (args[3] != "value") {
+				neocortex_error("setoption: expected value, read '%s'\n", args[3].c_str());
 				continue;
 			}
 
 			int value;
 
 			try {
-				value = std::stoi(args[4]);
-			} catch (std::exception& e) {
+				value = stoi(args[4]);
+			} catch (exception& e) {
 				neocortex_error("setoption: %s", e.what());
 			}
 
 			if (args[2] == "Threads") {
-				if (value < 1 || value > std::thread::hardware_concurrency()) {
-					neocortex_error("Invalid number of threads (min %d, max %d).\n", 1, std::thread::hardware_concurrency());
+				if (value < 1 || value > max_threads) {
+					neocortex_error("Invalid number of threads (min %d, max %d).\n", 1, max_threads);
 				}
 
 				pool::set_num_threads(value);
@@ -120,9 +131,12 @@ int main(int argc, char** argv) {
 			} else {
 				neocortex_warn("Unknown option %s", args[2].c_str());
 			}
+
+			continue;
 		}
 
 		if (args[0] == "go") {
+			continue;
 		}
 
 		if (args[0] == "train") {
@@ -134,8 +148,14 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
+int train() {
+	neocortex_info("Starting training.\n");
+
+	return 0;
+}
+
 int usage(char* a0) {
-	std::cout << "usage: " << a0 << " [-n num] [-b maxbatchsize] [-t time] [-j threads] [modelA [modelB]]\n";
+	cout << "usage: " << a0 << " [-n num] [-b maxbatchsize] [-t time] [-j threads] [modelA [modelB]]\n";
 
 	return 1;
 }

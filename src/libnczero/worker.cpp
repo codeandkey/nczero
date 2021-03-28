@@ -5,10 +5,7 @@
 using namespace neocortex;
 
 worker::worker(int bsize) {
-    max_batch_size = bsize;
-    board_input.resize(bsize * 8 * 8 * 85, 0.0f);
-    lmm_input.resize(bsize * 4096, 0.0f);
-    new_children.resize(bsize);
+    set_batch_size(bsize);
 }
 
 void worker::start(node* root, chess::position& rootpos) {
@@ -18,6 +15,13 @@ void worker::start(node* root, chess::position& rootpos) {
 
 void worker::stop() {
     running = false;
+}
+
+void worker::set_batch_size(int bsize) {
+    max_batch_size = bsize;
+    board_input.resize(bsize * 8 * 8 * 85, 0.0f);
+    lmm_input.resize(bsize * 4096, 0.0f);
+    new_children.resize(bsize);
 }
 
 void worker::make_batch(shared_ptr<node>& root, int allocated) {

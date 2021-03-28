@@ -32,3 +32,14 @@ bool node::backprop_terminal(float tv) {
 bool node::has_children() {
     return flag_has_children;
 }
+
+void node::backprop(float value) {
+    value_lock.lock();
+    ++n;
+    w = w + value;
+    value_lock.unlock();
+
+    if (parent != nullptr) {
+        parent->backprop(-value);
+    }
+}

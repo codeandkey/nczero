@@ -5,6 +5,7 @@
  * LICENSE.txt, included in this source code distribution.
  */
 
+#pragma once
 #define DEFAULT_BATCH_SIZE 16
 
 #include <nczero/chess/position.h>

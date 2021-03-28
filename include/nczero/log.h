@@ -108,7 +108,7 @@ namespace neocortex {
 				static const char* colors[] = {
 					"\e[0;31m",
 					"\e[0;33m",
-					"\e[0;37m",
+					"\e[0;39m",
 					"\e[0;36m",
 				};
 
@@ -118,10 +118,10 @@ namespace neocortex {
 
 			/* Write level tag */
 			static const char* level_strings[] = {
-				"ERROR   ",
-				"WARNING ",
-				"INFO    ",
-				"DEBUG   ",
+				"E",
+				"W",
+				"I",
+				"D",
 			};
 
 			fprintf(stderr, "%s > ", level_strings[level]);
