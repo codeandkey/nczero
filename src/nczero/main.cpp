@@ -75,10 +75,8 @@ int main(int argc, char** argv) {
 	cout << "option name NDPly type spin default -1 min -1 max " << MAX_ND_PLY << "\n";
 	cout << "uciok\n";
 
-	shared_ptr<nn::Network> model;
-
 	try {
-		model = make_shared<nn::Network>("models/latest");
+		nn::init();
 	} catch(std::exception& e) { 
 		neocortex_error("Failed to load model: %s\n", e.what());
 		return 1;
@@ -196,7 +194,7 @@ int main(int argc, char** argv) {
 				move_time = DEFAULT_MOVE_TIME;
 			}
 
-			int action = pool::search(search_tree, move_time, model, pos, true);
+			int action = pool::search(search_tree, move_time, pos, true);
 
 			continue;
 		}

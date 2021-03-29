@@ -7,26 +7,44 @@
 
 #pragma once
 
+#include <filesystem>
+#include <initializer_list>
 #include <string>
 #include <vector>
-#include <initializer_list>
-
-#include <torch/script.h>
 
 namespace neocortex {
 	namespace nn {
-		class Network {
-		public:
-			struct Output {
-				float policy[4096], value;
-			};
+		/**
+		 * Bits per square in the input layer.
+		 * Input shape is (bsize, 8, 8, SQUARE_BITS)
+		 */
+		constexpr size_t SQUARE_BITS = 85;
 
-			Network(std::string path);
+		/**
+		 * Path to model directory.
+		 */
+		constexpr const char* MODEL_DIR_PATH = "models";
 
-			std::vector<Output> evaluate(std::vector<float>& inp_board, std::vector<float>& inp_lmm, int num_batches);
+		/**
+		 * Name for latest model.
+		 */
+		constexpr const char* MODEL_LATEST_NAME = "latest";
 
-		private:
-			torch::jit::script::Module module;
+		/**
+		 * Torchscript model filename.
+		 */
+		constexpr const char* MODEL_FILENAME = "network.pt";
+
+		/**
+		 * Network output structure.
+		 */
+		struct output {
+			float policy[4096], value;
 		};
+
+		void init(bool allow_gen = true);
+		void generate();
+
+		std::vector<output> evaluate(float* inp_board, float* inp_lmm, int batchsize);
 	}
 }

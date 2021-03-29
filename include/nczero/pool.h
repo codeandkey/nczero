@@ -14,7 +14,7 @@
 namespace neocortex {
     namespace pool {
         void init(int num_threads);
-        int search(shared_ptr<node>& root, int maxtime, std::shared_ptr<nn::Network> net, chess::position& p, bool uci=false);
+        int search(shared_ptr<node>& root, int maxtime, chess::position& p, bool uci=false);
         
         void set_batch_size(int bsize);
         int get_batch_size();

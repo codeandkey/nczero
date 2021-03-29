@@ -9,6 +9,7 @@
 #include <nczero/chess/color.h>
 #include <nczero/chess/position.h>
 #include <nczero/log.h>
+#include <nczero/net.h>
 #include <nczero/util.h>
 
 #include <cassert>
@@ -36,6 +37,11 @@ position::position() {
 
 	ply.push_back(first_state);
 	color_to_move = color::WHITE;
+
+	input[color::WHITE].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+	input[color::BLACK].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+
+	_write_frame();
 }
 
 position::position(std::string fen) {
@@ -89,6 +95,11 @@ position::position(std::string fen) {
 	}
 
 	ply.push_back(first_state);
+
+	input[color::WHITE].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+	input[color::BLACK].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+
+	_write_frame();
 }
 
 std::string position::to_fen() {
@@ -232,6 +243,9 @@ bool position::make_move(int m) {
 		next_state.key ^= zobrist::black_to_move();
 	}
 
+	_push_frame();
+	_write_frame();
+
 	/* Check that king is not in attack */
 	return !test_check(!color_to_move);
 }
@@ -294,6 +308,9 @@ int position::unmake_move() {
 	} else {
 		b.place(src, moved_piece);
 	}
+
+	_pop_frame();
+	_write_frame();
 
 	return m;
 }

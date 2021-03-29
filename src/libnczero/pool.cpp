@@ -12,7 +12,7 @@
 using namespace neocortex;
 using namespace std;
 
-static int batch_size;
+static int batch_size = DEFAULT_BATCH_SIZE;
 static vector<shared_ptr<worker>> workers;
 
 static void _init_workers();
@@ -21,7 +21,7 @@ void pool::init(int num_threads) {
     set_num_threads(num_threads);
 }
 
-int pool::search(shared_ptr<node>& root, int maxtime, std::shared_ptr<nn::Network> net, chess::position& p, bool uci) {
+int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool uci) {
     util::time_point starttime = util::time_now();
 
     // Start workers.
@@ -31,7 +31,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, std::shared_ptr<nn::Networ
 
     while (1) {
         int elapsed = util::time_elapsed_ms(starttime);
-        int node_count, batch_count, batch_avg, exec_avg;
+        int node_count = 0, batch_count = 0, batch_avg = 0, exec_avg = 0;
 
         if (elapsed >= maxtime) {
             break;
@@ -46,7 +46,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, std::shared_ptr<nn::Networ
             exec_avg += cstatus.exec_avg;
         }
 
-        int nps = (long) node_count * 1000 / (long) elapsed;
+        int nps = (long) node_count * 1000 / ((long) elapsed + 1);
 
         // Print search status
         if (uci) {

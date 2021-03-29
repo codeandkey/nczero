@@ -11,9 +11,11 @@
 
 #pragma once
 
+#include <nczero/chess/color.h>
 #include <nczero/chess/move.h>
 #include <nczero/net.h>
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -37,38 +39,21 @@ namespace neocortex {
              * Constructs a new child node.
              * @param parent parent node
              * @param action node decision
+             * @param pov POV if parent not provided
              */
-            node(shared_ptr<node> parent = nullptr, int action = chess::move::null());
+            node(shared_ptr<node> parent = nullptr, int action = chess::move::null(), int pov = chess::color::WHITE);
 
             /**
-             * Checks if the node is claimed.
-             * @return true if node is claimed, false otherwise
+             * Applies a policy value to this node.
+             * @param pbuf Policy result from evaluation of parent node
              */
-            bool is_claimed();
+            void apply_policy(float* pbuf);
 
             /**
-             * Tries to claim the node.
-             * @return true if node is claimed, false otherwise
+             * Applies a evaluated value to this node.
+             * @param val Value result from evaluation of this node
              */
-            bool try_claim();
-
-            /**
-             * Unclaims the node.
-             */
-            void unclaim();
-
-            /**
-             * Applies a network result to this node.
-             * @param result Result from network to backprop.
-             */
-            void apply_result(nn::Network::Output& result);
-
-            /**
-             * Expands the node and creates placeholder children.
-             * @param moves Legal move array pointer.
-             * @param num_moves Number of legal moves.
-             */
-            void expand(int* moves, int num_moves);
+            void apply_value(float val);
 
             /**
              * Sets the cached terminal value in the node.
@@ -76,7 +61,7 @@ namespace neocortex {
              */
             void set_terminal(int result);
 
-            void set_children(std::vector<shared_ptr<node>> new_children);
+            bool set_children(std::vector<shared_ptr<node>> new_children);
 
             /**
              * Finds a child with action <action>, sets its parent to nullptr
@@ -107,7 +92,6 @@ namespace neocortex {
              */
             bool has_children();
 
-        protected:
             /**
              * Backpropagates a value up through the tree.
              * @param value Value to propagate, from node's POV.

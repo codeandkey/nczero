@@ -2,6 +2,8 @@
 #include <nczero/chess/move.h>
 #include <nczero/worker.h>
 
+#include <cstring>
+
 using namespace neocortex;
 
 worker::worker(int bsize) {
@@ -13,11 +15,52 @@ void worker::start(shared_ptr<node>& root, chess::position& rootpos) {
     running = true;
 
     // Placeholder worker
-    worker_thread = thread([&](worker* self) {
-        while (running) {
-            this_thread::sleep_for(chrono::duration<int, std::milli>(50));
+    worker_thread = thread(&worker::job, this, std::ref(root));
+}
+
+void worker::job(shared_ptr<node>& root) {
+    status_mutex.lock();
+    current_status = status();
+    status_mutex.unlock();
+
+    while (running) {
+        // Clear batch nodes, new children
+        new_children.clear();
+        batch_nodes.clear();
+
+        // Prepare next batch
+        current_batch_size = 0;
+
+        make_batch(root, max_batch_size);
+
+        if (current_batch_size > 0) {
+            // Execute batch
+            vector<nn::output> results = nn::evaluate(&board_input[0], &lmm_input[0], current_batch_size);
+
+            // Apply results
+            for (int i = 0; i < results.size(); ++i) {
+                node* dst = batch_nodes[i];
+
+                // Apply policy to new children
+                for (auto& child: new_children[i]) {
+                    child->apply_policy(results[i].policy);
+                }
+
+                if (!dst->set_children(new_children[i])) continue;
+                dst->backprop(results[i].value);
+
+                /*status_mutex.lock();
+                ++current_status.node_count;
+                status_mutex.unlock();*/
+            }
+
+            // Update status
+            status_mutex.lock();
+            ++current_status.batch_count;
+            current_status.node_count += current_batch_size;
+            status_mutex.unlock();
         }
-    }, this);
+    }
 }
 
 void worker::stop() {
@@ -36,8 +79,13 @@ void worker::set_batch_size(int bsize) {
 }
 
 void worker::make_batch(shared_ptr<node>& root, int allocated) {
+    if (current_batch_size >= max_batch_size) {
+        return;
+    }
+
     if (root->has_children()) {
         // Continue selecting
+        //return;
     }
 
     // No children, check if cached terminal
@@ -73,7 +121,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
 		if (pos.make_move(moves[i])) {
 			++num_moves;
 
-            new_children[current_batch_size].push_back(
+            tmp_new_children.push_back(
                 make_shared<node>(root, moves[i])
             );
 		}
@@ -84,8 +132,8 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
         int src = chess::move::src(pos.last_move());
         int dst = chess::move::dst(pos.last_move());
 
-        for (int i = 0; i < 4096; ++i) {
-            lmm_input[current_batch_size * 4096 + i] = 0.0f;
+        for (int j = 0; j < 4096; ++j) {
+            lmm_input[current_batch_size * 4096 + j] = 0.0f;
         }
 
         if (pos.get_color_to_move() == chess::color::WHITE) {
@@ -109,6 +157,12 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
 
     // Write board input
     memcpy(&board_input[current_batch_size * 8 * 8 * 85], &pos.get_input(), sizeof(float) * 8 * 8 * 85);
+
+    // Store new children
+    new_children.push_back(tmp_new_children);
+
+    // Write batch node
+    batch_nodes.push_back(root.get());
 
     // Finally, increment batch counter
     ++current_batch_size;

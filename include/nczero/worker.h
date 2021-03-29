@@ -27,6 +27,7 @@ namespace neocortex {
             void start(shared_ptr<node>& root, chess::position& rootpos);
             void stop();
             void join();
+            void job(shared_ptr<node>& root);
             void set_batch_size(int bsize);
 
             struct status {
@@ -48,6 +49,8 @@ namespace neocortex {
 
             int current_batch_size, max_batch_size;
             vector<float> board_input, lmm_input;
+
             vector<vector<shared_ptr<node>>> new_children;
+            vector<node*> batch_nodes;
     };
 }
