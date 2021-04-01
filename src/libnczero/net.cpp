@@ -32,7 +32,7 @@ std::vector<nn::output> nn::evaluate(float* inp_board, float* inp_lmm, int batch
 	std::vector<torch::jit::IValue> inputs;
 	std::vector<output> outputs;
 
-	auto btensor = torch::from_blob(inp_board, {batch_size, SQUARE_BITS, 8, 8}, at::kFloat);
+	auto btensor = torch::from_blob(inp_board, {batch_size, 8, 8, SQUARE_BITS}, at::kFloat);
 	auto lmmtensor = torch::from_blob(inp_lmm, {batch_size, 4096}, at::kFloat);
 
 	if (torch::hasCUDA()) {

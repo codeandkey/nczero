@@ -37,7 +37,7 @@ namespace neocortex {
 
             status get_status();
         private:
-            void make_batch(shared_ptr<node>& root, int allocated);
+            int make_batch(shared_ptr<node>& root, int allocated);
 
             atomic<bool> running;
 

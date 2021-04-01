@@ -1,23 +1,30 @@
 #include <nczero/node.h>
 
+#include <cmath>
+
 using namespace neocortex;
 
 node::node(shared_ptr<node> parent, int action, int pov) {
+    this->parent = parent;
+    this->action = action;
+
     if (parent != nullptr) {
         this->pov = !parent->pov;
     } else {
         this->pov = pov;
     }
-    this->parent = parent;
-    this->action = action;
 
     n = 0;
     terminal = 1;
-    w = p = 0.0f;
+    w = p = total_p = 0.0f;
+    flag_has_children = false;
 }
 
 float node::get_uct() {
-    return 0.0f; // TODO
+    value_lock.lock();
+    float uct = (w / (n + 1)) + POLICY_WEIGHT * (p / parent->total_p) + EXPLORATION * sqrtf(log(parent->n) / (n + 1));
+    value_lock.unlock();
+    return uct;
 }
 
 bool node::backprop_terminal(float tv) {
@@ -65,4 +72,36 @@ void node::apply_policy(float* pbuf) {
         // This node is a decision for BLACK, use reversed index
         p = pbuf[(63 - chess::move::src(action)) * 64 + (63 - chess::move::dst(action))];
     }
+
+    parent->total_p = parent->total_p + p;
+}
+
+shared_ptr<node> node::move_child(int action) {
+    // Find child
+    for (auto& child : children) {
+        if (child->action == action) {
+            child->parent = nullptr;
+            return child;
+        }
+    }
+
+    throw runtime_error("No such child for action" + chess::move::to_uci(action));
+}
+
+vector<shared_ptr<node>>& node::get_children() {
+    return children;
+}
+
+int node::get_action() {
+    return action;
+}
+
+int node::get_n() {
+    lock_guard<mutex> lock(value_lock);
+    return n;
+}
+
+float node::get_w() {
+    lock_guard<mutex> lock(value_lock);
+    return w;
 }

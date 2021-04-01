@@ -14,6 +14,7 @@
 #include <nczero/chess/type.h>
 
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -206,10 +207,22 @@ namespace neocortex {
 			bool is_draw_by_hrm();
 
 			/**
+			* Tests if the game is a over.
+			* @return wPOV value if game over, none otherwise
+			*/
+			std::optional<int> is_game_over();
+
+			/**
 			* Gets a reference to the board input layer.
 			* @return reference to board input layer
 			*/
 			std::vector<float>& get_input();
+
+			/**
+			 * Generates legal moves for the position.
+			 * @return vector of legal moves.
+			 */
+			std::vector<int> legal_moves();
 
 		private:
 			board b;

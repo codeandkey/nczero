@@ -98,12 +98,26 @@ namespace neocortex {
              */
             void backprop(float value);
 
-        private:
-            int pov, action;
+            /**
+             * Gets a reference to the children of this node.
+             * @return Reference to children vec.
+             */
+            vector<shared_ptr<node>>& get_children();
 
-            atomic<int> n, terminal;
-            atomic<float> w, p;
-            atomic<bool> is_terminal, flag_has_children;
+            /**
+             * Returns the action at this node, or move::null() if none exists
+             * @return Reference to node action.
+             */
+            int get_action();
+
+            int get_n();
+            float get_w();
+
+        private:
+            int pov, action, terminal, n;
+            float w, p, total_p;
+            bool is_terminal;
+			atomic<bool> flag_has_children;
 
             shared_ptr<node> parent;
 

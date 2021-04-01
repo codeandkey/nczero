@@ -2,6 +2,8 @@
 #include <nczero/chess/move.h>
 #include <nczero/worker.h>
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 
 using namespace neocortex;
@@ -49,15 +51,14 @@ void worker::job(shared_ptr<node>& root) {
                 if (!dst->set_children(new_children[i])) continue;
                 dst->backprop(results[i].value);
 
-                /*status_mutex.lock();
+                status_mutex.lock();
                 ++current_status.node_count;
-                status_mutex.unlock();*/
+                status_mutex.unlock();
             }
 
             // Update status
             status_mutex.lock();
             ++current_status.batch_count;
-            current_status.node_count += current_batch_size;
             status_mutex.unlock();
         }
     }
@@ -78,14 +79,54 @@ void worker::set_batch_size(int bsize) {
     new_children.resize(bsize);
 }
 
-void worker::make_batch(shared_ptr<node>& root, int allocated) {
+int worker::make_batch(shared_ptr<node>& root, int allocated) {
     if (current_batch_size >= max_batch_size) {
-        return;
+        return 0;
     }
 
     if (root->has_children()) {
         // Continue selecting
-        //return;
+
+        // Order children
+        vector<pair<shared_ptr<node>, float>> uct_pairs;
+        float uct_total = 0.0f;
+
+        for (auto& child : root->get_children()) {
+            float uct = child->get_uct();
+            uct_total += uct;
+            uct_pairs.push_back(make_pair(child, uct));       
+        }
+
+        sort(uct_pairs.begin(), uct_pairs.end(), [](auto& a, auto& b) { return a.second > b.second; });
+
+        // Distribute batches to children
+		int total_batches = 0;
+
+		for (int i = 0; i < uct_pairs.size(); ++i) {
+			if (allocated <= 0) {
+				break;
+			}
+
+			shared_ptr<node>& child = uct_pairs[i].first;
+
+			int child_alloc = ceil(uct_pairs[i].second * float(allocated) / uct_total);
+			uct_total -= uct_pairs[i].second;
+
+			pos.make_move(child->get_action());
+
+			int new_batches = make_batch(child, child_alloc);
+
+			pos.unmake_move();
+
+			allocated -= new_batches;
+			total_batches += new_batches;
+
+			if (allocated == 0) {
+				return total_batches;
+			}
+		}
+
+		return total_batches;
     }
 
     // No children, check if cached terminal
@@ -95,7 +136,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
         ++current_status.node_count;
         status_mutex.unlock();
 
-        return;
+        return 0;
     }
 
     // Not cached terminal, check if HRM
@@ -107,7 +148,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
         ++current_status.node_count;
         status_mutex.unlock();
 
-        return;
+        return 0;
     }
 
     // Generate moves
@@ -152,7 +193,7 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
         ++current_status.node_count;
         status_mutex.unlock();
 
-        return;
+        return 0;
     }
 
     // Write board input
@@ -166,6 +207,8 @@ void worker::make_batch(shared_ptr<node>& root, int allocated) {
 
     // Finally, increment batch counter
     ++current_batch_size;
+
+    return 1;
 }
 
 worker::status worker::get_status() {

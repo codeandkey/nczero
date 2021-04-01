@@ -14,22 +14,24 @@
 #include <nczero/pool.h>
 #include <nczero/platform.h>
 
-#include <filesystem>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <list>
 #include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <fstream>
 
 #define MAX_BATCH_SIZE 256
 #define MAX_ND_PLY 1024
 #define DEFAULT_MOVE_FRAC 10
 #define DEFAULT_MOVE_TIME 5000
+#define NUM_GAMES 16
 
 using namespace neocortex;
 using namespace std;
 
 int train();
+int uci();
+
+static size_t max_threads = thread::hardware_concurrency();
 
 int main(int argc, char** argv) {
 #ifdef NEOCORTEX_DEBUG
@@ -40,20 +42,103 @@ int main(int argc, char** argv) {
 
 	neocortex_info(NEOCORTEX_NAME " " NEOCORTEX_VERSION " " NEOCORTEX_BUILDTIME " " NEOCORTEX_DEBUG_STR "\n");
 
-	auto model_dir = filesystem::path("models");
-	auto games_dir = filesystem::path("games");
-
-	filesystem::create_directories(model_dir);
-	filesystem::create_directories(games_dir);
-
 	chess::bb::init();
 	chess::zobrist::init();
 	chess::attacks::init();
 
-	const size_t max_threads = thread::hardware_concurrency();
-
 	pool::init(max_threads);
 
+	util::time_point start_point = util::time_now();
+
+	try {
+		nn::init();
+	} catch(std::exception& e) { 
+		neocortex_error("Failed to load model: %s\n", e.what());
+		return 1;
+	}
+
+	neocortex_info("Loaded model in %d ms\n", util::time_elapsed_ms(start_point));
+
+	if (argc > 1 && std::string(argv[1]) == "uci") {
+		return uci();
+	}
+
+	return train();
+}
+
+int train() {
+	neocortex_info("Starting training.\n");
+
+	for (int i = 0; i < NUM_GAMES; ++i) {
+		// Search for existing game path
+		filesystem::path game_path = nn::MODEL_DIR_PATH;
+		
+		game_path /= nn::MODEL_LATEST_NAME;
+		game_path /= std::to_string(i);
+
+		if (filesystem::exists(game_path)) continue;
+		neocortex_info("Starting game %d/%d\n", i + 1, NUM_GAMES);
+
+		chess::position pos;
+		std::ofstream output(game_path);
+
+		if (!output) {
+			neocortex_error("Failed to open %s for writing: %s", game_path.string().c_str(), strerror(errno));
+			continue;
+		}
+
+		shared_ptr<node> search_tree = make_shared<node>();
+
+		// Play game
+		while (1) {
+			// Search the position.
+			int action = pool::search(search_tree, DEFAULT_MOVE_TIME, pos);
+
+			// Write the decision.
+			output << chess::move::to_uci(action);
+
+			// Write the input layer.
+			for (auto& el : pos.get_input()) {
+				output << " " << el;
+			}
+
+			// Write the LMM layer.
+			float lmm[4096] = {0.0f};
+
+			for (auto& m : pos.legal_moves()) {
+				int src = chess::move::src(m);
+				int dst = chess::move::dst(m);
+
+				if (pos.get_color_to_move() == chess::color::WHITE) {
+					lmm[src * 64 + dst] = 1.0f;
+				} else {
+					lmm[(63 - src) * 64 + (63 - dst)] = 1.0f;
+				}
+			}
+
+			// Make the move.
+			if (!pos.make_move(action)) {
+				throw runtime_error("Search returned illegal move");
+			}
+
+			// Check if the game is over.
+			optional<int> result = pos.is_game_over();
+
+			if (result.has_value()) {
+				// Write the result and stop this game.
+				output << *result << "\n";
+				break;
+			}
+
+			// Advance the search tree for next move.
+			search_tree = search_tree->move_child(action);
+		}
+	}
+
+	return 0;
+}
+
+int uci() {
 	// start uci
 	string mode;
 	getline(cin, mode);
@@ -72,15 +157,8 @@ int main(int argc, char** argv) {
 
 	cout << "option name Threads type spin default " << pool::get_num_threads() << " min 1 max " << pool::get_num_threads() << "\n";
 	cout << "option name Batch type spin default " << pool::get_batch_size() << " min 1 max " << MAX_BATCH_SIZE << "\n";
-	cout << "option name NDPly type spin default -1 min -1 max " << MAX_ND_PLY << "\n";
 	cout << "uciok\n";
 
-	try {
-		nn::init();
-	} catch(std::exception& e) { 
-		neocortex_error("Failed to load model: %s\n", e.what());
-		return 1;
-	}
 
 	chess::position pos;
 	shared_ptr<node> search_tree = make_shared<node>();
@@ -177,7 +255,7 @@ int main(int argc, char** argv) {
 					parse_arg("wtime", &wtime);
 					continue;
 				}
-			
+
 				if (args[i] == "btime") {
 					parse_arg("btime", &btime);
 					continue;
@@ -196,6 +274,8 @@ int main(int argc, char** argv) {
 
 			int action = pool::search(search_tree, move_time, pos, true);
 
+			cout << "bestmove " << chess::move::to_uci(action) << "\n";
+
 			continue;
 		}
 
@@ -208,14 +288,8 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-int train() {
-	neocortex_info("Starting training.\n");
-
-	return 0;
-}
-
 int usage(char* a0) {
-	cout << "usage: " << a0 << " [-n num] [-b maxbatchsize] [-t time] [-j threads] [modelA [modelB]]\n";
+	cout << "usage: " << a0 << " [-n GAMES] [-m MOVEMS] [-t THREADS] [-b BATCH] [uci]\n";
 
 	return 1;
 }

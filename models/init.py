@@ -89,10 +89,11 @@ class NCZNet(torch.nn.Module):
         self.test_bn1 = torch.nn.BatchNorm2d(num_features=SQUARE_BITS)
 
     def forward(self, inp_board, inp_lmm):
-        x = inp_board
+        # Permute input from NWHC to NCWH
+        x = inp_board.permute((0, 3, 1, 2))
 
         # Apply first convolutional layer
-        x = self.conv1(inp_board)
+        x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
 
@@ -132,7 +133,7 @@ print('Initializing model. ({} square bits, {} residuals, {} total convs)'.forma
 model = NCZNet()
 
 # Test model exec
-inp_board = torch.rand((1, SQUARE_BITS, 8, 8))
+inp_board = torch.rand((1, 8, 8, SQUARE_BITS))
 inp_lmm = torch.ones((1, 4096))
 
 (policy, value) = model(inp_board, inp_lmm)

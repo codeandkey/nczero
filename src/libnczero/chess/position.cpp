@@ -1074,3 +1074,49 @@ std::string position::dump() {
 
 	return output;
 }
+
+std::optional<int> position::is_game_over() {
+	if (is_draw_by_hrm()) {
+		return 0;
+	}
+
+	// Generate legal moves
+	int moves[MAX_PL_MOVES], num_legal = 0;
+	int num_pl_moves = pseudolegal_moves(moves);
+
+	for (int i = 0; i < num_pl_moves; ++i) {
+		if (make_move(moves[i])) {
+			++num_legal;
+		}
+
+		unmake_move();
+	}
+
+	if (!num_legal) {
+		if (check()) {
+			return (color_to_move == color::WHITE) ? -1 : 1;
+		} else {
+			return 0;
+		}
+	}
+
+	return std::optional<int>();
+}
+
+std::vector<int> position::legal_moves() {
+	std::vector<int> output;
+
+	// Generate legal moves
+	int moves[MAX_PL_MOVES], num_legal = 0;
+	int num_pl_moves = pseudolegal_moves(moves);
+
+	for (int i = 0; i < num_pl_moves; ++i) {
+		if (make_move(moves[i])) {
+			output.push_back(moves[i]);
+		}
+
+		unmake_move();
+	}
+
+	return output;
+}
