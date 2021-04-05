@@ -75,6 +75,15 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
             }
         }
 
+        // Clear the status lines, and return the cursor to the top
+        for (int i = 0; i < workers.size(); ++i) {
+            fprintf(stderr, "\001b[2\n");
+        }
+
+        for (int i = 0; i < workers.size(); ++i) {
+            fprintf(stderr, "\033[F");
+        }
+
         this_thread::sleep_for(chrono::duration<int, std::milli>(POOL_INFO_DELAY));
 
         // Reset timer if no nodes have been searched yet
