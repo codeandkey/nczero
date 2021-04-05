@@ -22,6 +22,7 @@ Many techniques in this engine are inspired by the revolutionary [AlphaZero](htt
 ## building
 
 To build nczero execute `./compile` in the project directory.
-After nczero is built you can execute it with `build/nczero`.
+
+After nczero is built you can execute it with `build/bin/nczero`.
 
 > NOTE: Building the test suite requires GoogleTest to be available on the host.
