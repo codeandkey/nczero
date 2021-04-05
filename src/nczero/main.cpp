@@ -7,6 +7,7 @@
 
 #include <nczero/chess/attacks.h>
 #include <nczero/chess/color.h>
+#include <nczero/chess/move.h>
 #include <nczero/chess/position.h>
 #include <nczero/chess/zobrist.h>
 #include <nczero/log.h>
@@ -14,6 +15,7 @@
 #include <nczero/pool.h>
 #include <nczero/platform.h>
 
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
@@ -115,6 +117,54 @@ int train() {
 					lmm[(63 - src) * 64 + (63 - dst)] = 1.0f;
 				}
 			}
+
+			// Write normalized MCTS counts for POV
+			// First get total n
+
+			int total_n = 0;
+
+			for (auto& c : search_tree->get_children()) {
+				total_n += c->get_value().n;
+			}
+
+			std::vector<float> mcts_counts(4096, 0.0f);
+
+			for (auto& c : search_tree->get_children()) {
+				int src = (pos.get_color_to_move() == chess::color::WHITE) ? chess::move::src(c->get_action()) : (63 - chess::move::src(c->get_action()));
+				int dst = (pos.get_color_to_move() == chess::color::WHITE) ? chess::move::dst(c->get_action()) : (63 - chess::move::dst(c->get_action()));
+
+				mcts_counts[src * 64 + dst] = (float) c->get_value().n / (float) total_n;
+			}
+
+			for (int i = 0; i < mcts_counts.size(); ++i) {
+				output << " " << mcts_counts[i];
+			}
+
+			output << "\n";
+
+			// Write debug info on decision.
+			std::vector<std::pair<int, shared_ptr<node>>> node_pairs;
+
+			for (auto& c : search_tree->get_children()) {
+				node_pairs.push_back(make_pair(c->get_value().n, c));
+			}
+
+			std::sort(node_pairs.begin(), node_pairs.end(), [&](auto& a, auto& b) { return a.first > b.first; });
+
+			neocortex_debug("==> Selecting from %d children\n", node_pairs.size());
+			for (int i = 0; i < node_pairs.size(); ++i) {
+				node::value val = node_pairs[i].second->get_value();
+				neocortex_debug(
+					"=> %s %3.1f%% | N = %4d | Q = %3.2f | P = %3.1f%%\n",
+					chess::move::to_uci(node_pairs[i].second->get_action()).c_str(),
+					100.0f * (float) val.n / (float) total_n,
+					val.n,
+					(float) val.w / (float) val.n,
+					100.0f * node_pairs[i].second->get_p_pct()
+				);
+			}
+
+			neocortex_info("Making move %s\n", chess::move::to_uci(action).c_str());
 
 			// Make the move.
 			if (!pos.make_move(action)) {

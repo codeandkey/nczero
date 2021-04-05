@@ -57,9 +57,30 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
             cout << "info time " << elapsed << " nodes " << node_count << " nps " << nps << "\n";
         } else {
             // Non-uci pretty status on stderr
+            
+            for (int i = 0; i < workers.size(); ++i) {
+                worker::status st = workers[i]->get_status();
+                neocortex_info(
+                    "%d: %s | %3d batches | %5d nodes | %5d nps\n",
+                    i,
+                    st.code.c_str(),
+                    st.batch_count,
+                    st.node_count,
+                    st.node_count * 1000 / (elapsed + 1)
+                );
+            }
+
+            for (int i = 0; i < workers.size(); ++i) {
+                fprintf(stderr, "\033[F");
+            }
         }
 
         this_thread::sleep_for(chrono::duration<int, std::milli>(POOL_INFO_DELAY));
+
+        // Reset timer if no nodes have been searched yet
+        if (node_count == 0) {
+            starttime = util::time_now();
+        }
     }
 
     // Stop workers.
@@ -78,47 +99,11 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
 	std::mt19937 rng(device());
 	std::discrete_distribution<> dist(n_dist.begin(), n_dist.end());
 
-	shared_ptr<node>& chosen = root->get_children[dist(rng)];
-
-	// Print debug info
-	neocortex_info("Picking from %d children:\n", root.get_children().size());
-
-	std::vector<std::pair<shared_ptr<node>, int>> n_pairs;
-
-	int n_total = 0;
-
-    for (auto& c : root->get_children()) {
-        
-    }
-
     for (int i = 0; i < root->get_children().size(); ++i) {
-        n_total += root->get_children()[i]->get_n();
-		n_pairs.push_back({ root->get_children()[i], root->get_children()[i]->get_n() });
-        n_dist.push_back(root->get_children()[i]->get_n());
+        n_dist.push_back(root->get_children()[i]->get_value().n);
     }
 
-	std::sort(n_pairs.begin(), n_pairs.end(), [&](auto& a, auto& b) { return a.second > b.second; });
-
-	for (int i = 0; i < n_pairs.size(); ++i) {
-		auto& child = n_pairs[i].first;
-		std::string movestr = move::to_uci(child->get_action());
-
-		neocortex_info(
-			"%s> %5s  %03.1f%% | N=%4d | Q=%+04.2f | W=%+04.2f | P=%05.3f%%\n",
-			(child.get() == chosen.get()) ? "##" : "  ",
-			movestr.c_str(),
-			100.0f * (float)child.n / (float)n_total,
-			child.n,
-			child.q,
-			child.w,
-			100.0f * (float)child.p
-		);
-	}
-
-	std::string movestr = move::to_uci(chosen);
-	neocortex_info("Selecting move %s\n", movestr.c_str());
-
-    return chess::move::null();
+	return root->get_children()[dist(rng)]->get_action();
 }
 
 void pool::set_batch_size(int bsize) {

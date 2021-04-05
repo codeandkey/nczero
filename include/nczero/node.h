@@ -110,18 +110,27 @@ namespace neocortex {
              */
             int get_action();
 
-            int get_n();
-            float get_w();
+			struct value {
+				int n = 0;
+				float w = 0.0f;
+			};
+
+			void set_value(value v);
+			value get_value();
+
+			float get_p_pct();
 
         private:
-            int pov, action, terminal, n;
-            float w, p, total_p;
+            int pov, action, terminal;
+            float p, total_p;
             bool is_terminal;
 			atomic<bool> flag_has_children;
 
             shared_ptr<node> parent;
 
             std::vector<shared_ptr<node>> children;
+
+			value our_value;
             mutex value_lock;
     };
 }

@@ -33,10 +33,18 @@ void worker::job(shared_ptr<node>& root) {
         // Prepare next batch
         current_batch_size = 0;
 
+        status_mutex.lock();
+        current_status.code = "building";
+        status_mutex.unlock();
+
         make_batch(root, max_batch_size);
 
         if (current_batch_size > 0) {
             // Execute batch
+            status_mutex.lock();
+            current_status.code = "execute ";
+            status_mutex.unlock();
+
             vector<nn::output> results = nn::evaluate(&board_input[0], &lmm_input[0], current_batch_size);
 
             // Apply results
@@ -180,7 +188,7 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
         if (pos.get_color_to_move() == chess::color::WHITE) {
             lmm_input[current_batch_size * 4096 + src * 64 + dst] = 1.0f;
         } else {
-            lmm_input[current_batch_size * 4096 + 4095 - src * 64 - dst] = 1.0f;
+            lmm_input[current_batch_size * 4096 + (63 - src) * 64 + (63 - dst)] = 1.0f;
         }
     }
 
@@ -197,7 +205,7 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
     }
 
     // Write board input
-    memcpy(&board_input[current_batch_size * 8 * 8 * 85], &pos.get_input(), sizeof(float) * 8 * 8 * 85);
+    memcpy(&board_input[current_batch_size * 8 * 8 * nn::SQUARE_BITS], &pos.get_input(), sizeof(float) * 8 * 8 * nn::SQUARE_BITS);
 
     // Store new children
     new_children.push_back(tmp_new_children);

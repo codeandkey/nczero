@@ -29,6 +29,7 @@ namespace neocortex {
             void join();
             void job(shared_ptr<node>& root);
             void set_batch_size(int bsize);
+			void set_status_code(std::string code);
 
             struct status {
                 std::string code = "uninitialized";

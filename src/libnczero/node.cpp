@@ -14,15 +14,14 @@ node::node(shared_ptr<node> parent, int action, int pov) {
         this->pov = pov;
     }
 
-    n = 0;
     terminal = 1;
-    w = p = total_p = 0.0f;
+    p = total_p = 0.0f;
     flag_has_children = false;
 }
 
 float node::get_uct() {
     value_lock.lock();
-    float uct = (w / (n + 1)) + POLICY_WEIGHT * (p / parent->total_p) + EXPLORATION * sqrtf(log(parent->n) / (n + 1));
+    float uct = (our_value.w / (our_value.n + 1)) + POLICY_WEIGHT * (p / parent->total_p) + EXPLORATION * sqrtf(log(parent->our_value.n) / (our_value.n + 1));
     value_lock.unlock();
     return uct;
 }
@@ -55,8 +54,8 @@ bool node::has_children() {
 
 void node::backprop(float value) {
     value_lock.lock();
-    ++n;
-    w = w + value;
+    ++our_value.n;
+    our_value.w += value;
     value_lock.unlock();
 
     if (parent != nullptr) {
@@ -96,12 +95,16 @@ int node::get_action() {
     return action;
 }
 
-int node::get_n() {
+node::value node::get_value() {
     lock_guard<mutex> lock(value_lock);
-    return n;
+    return our_value;
 }
 
-float node::get_w() {
+void node::set_value(node::value v) {
     lock_guard<mutex> lock(value_lock);
-    return w;
+    our_value = v;
+}
+
+float node::get_p_pct() {
+    return p / parent->total_p;
 }
