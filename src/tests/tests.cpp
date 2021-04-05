@@ -1,8 +1,22 @@
 /* vim: set ts=4 sw=4 noet: */
 
+#include <nczero/chess/attacks.h>
+#include <nczero/chess/bitboard.h>
+#include <nczero/chess/board.h>
+#include <nczero/chess/color.h>
+#include <nczero/chess/perft.h>
+#include <nczero/chess/piece.h>
+#include <nczero/chess/position.h>
+#include <nczero/chess/type.h>
+#include <nczero/chess/zobrist.h>
+
+#include <nczero/log.h>
+#include <nczero/tests.h>
+
 #include <gtest/gtest.h>
 
 using namespace neocortex;
+using namespace neocortex::chess;
 
 /**
  * AttacksTest: tests for attack lookups in attacks.cpp
@@ -33,59 +47,59 @@ TEST(AttacksTest, QueenAttacks) {
 }
 
 /**
- * BitboardTest: tests for bitboard operations in bitboard.cpp
+ * BitBoardTest: tests for bitboard operations in bitboard.cpp
  */
 
-TEST(BitboardTest, ToString) {
+TEST(BitBoardTest, ToString) {
 	EXPECT_EQ(
 		bb::to_string(0xFF),
 		std::string("........\n........\n........\n........\n........\n........\n........\n11111111\n")
 	);
 }
 
-TEST(BitboardTest, GetLsb) {
+TEST(BitBoardTest, GetLsb) {
 	EXPECT_EQ(bb::getlsb(0x100), 8);
 	EXPECT_EQ(bb::getlsb(0x200), 9);
 	EXPECT_EQ(bb::getlsb(0x400), 10);
 }
 
-TEST(BitboardTest, PopLsb) {
+TEST(BitBoardTest, PopLsb) {
 	bitboard b = 0x400;
 
 	EXPECT_EQ(bb::poplsb(b), 10);
 	EXPECT_EQ(b, 0ULL);
 }
 
-TEST(BitboardTest, Shift) {
+TEST(BitBoardTest, Shift) {
 	EXPECT_EQ(bb::shift(1, NORTH), (1ULL << 8));
 	EXPECT_EQ(bb::shift(1, EAST), (1ULL << 1));
 	EXPECT_EQ(bb::shift(1ULL << 8, SOUTH), 1ULL);
 }
 
-TEST(BitboardTest, Mask) {
+TEST(BitBoardTest, Mask) {
 	EXPECT_EQ(bb::mask(6), 1ULL << 6);
 	EXPECT_EQ(bb::mask(12), 1ULL << 12);
 	EXPECT_EQ(bb::mask(24), 1ULL << 24);
 }
 
-TEST(BitboardTest, Popcount) {
+TEST(BitBoardTest, Popcount) {
 	EXPECT_EQ(bb::popcount(0xF), 4);
 	EXPECT_EQ(bb::popcount(0xFFF), 12);
 }
 
-TEST(BitboardTest, Rank) {
+TEST(BitBoardTest, Rank) {
 	EXPECT_EQ(bb::rank(0), RANK_1);
 	EXPECT_EQ(bb::rank(4), RANK_5);
 	EXPECT_EQ(bb::rank(7), RANK_8);
 }
 
-TEST(BitboardTest, File) {
+TEST(BitBoardTest, File) {
 	EXPECT_EQ(bb::file(0), FILE_A);
 	EXPECT_EQ(bb::file(4), FILE_E);
 	EXPECT_EQ(bb::file(7), FILE_H);
 }
 
-TEST(BitboardTest, Between) {
+TEST(BitBoardTest, Between) {
 	EXPECT_EQ(bb::between(42, 60), 1ULL << 51);
 	EXPECT_EQ(bb::between(0, 56), FILE_A & ~(RANK_1 | RANK_8));
 	EXPECT_EQ(bb::between(0, 7), RANK_1 & ~(FILE_A | FILE_H));
@@ -103,7 +117,7 @@ TEST(BitboardTest, Between) {
  */
 
 TEST(BoardTest, Place) {
-	Board b = Board::standard();
+	board b = board::standard();
 
 	b.place(16, piece::make(color::WHITE, type::PAWN));
 
@@ -111,21 +125,21 @@ TEST(BoardTest, Place) {
 }
 
 TEST(BoardTest, Remove) {
-	Board b = Board::standard();
+	board b = board::standard();
 
 	EXPECT_EQ(b.remove(0), piece::make(color::WHITE, type::ROOK));
 	EXPECT_EQ(b.to_uci(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
 }
 
 TEST(BoardTest, Replace) {
-	Board b = Board::standard();
+	board b = board::standard();
 
 	EXPECT_EQ(b.replace(0, piece::make(color::BLACK, type::ROOK)), piece::make(color::WHITE, type::ROOK));
 	EXPECT_EQ(b.to_uci(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/rNBQKBNR");
 }
 
 TEST(BoardTest, ToUci) {
-	EXPECT_EQ(Board::standard().to_uci(), std::string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
+	EXPECT_EQ(board::standard().to_uci(), std::string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
 }
 
 TEST(BoardTest, ParseUci) {
@@ -137,39 +151,39 @@ TEST(BoardTest, ParseUci) {
 	uci_list.push_back("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R");
 
 	for (auto i : uci_list) {
-		EXPECT_EQ(Board(i).to_uci(), i);
+		EXPECT_EQ(board(i).to_uci(), i);
 	}
 }
 
 TEST(BoardTest, ToPretty) {
-	EXPECT_EQ(Board::standard().to_pretty(), "rnbqkbnr\npppppppp\n........\n........\n........\n........\nPPPPPPPP\nRNBQKBNR\n");
+	EXPECT_EQ(board::standard().to_pretty(), "rnbqkbnr\npppppppp\n........\n........\n........\n........\nPPPPPPPP\nRNBQKBNR\n");
 }
 
 TEST(BoardTest, GlobalOcc) {
-	EXPECT_EQ(Board::standard().get_global_occ(), 0xFFFF00000000FFFF);
+	EXPECT_EQ(board::standard().get_global_occ(), 0xFFFF00000000FFFF);
 }
 
 TEST(BoardTest, ColorOcc) {
-	EXPECT_EQ(Board::standard().get_color_occ(color::WHITE), 0x000000000000FFFF);
-	EXPECT_EQ(Board::standard().get_color_occ(color::BLACK), 0xFFFF000000000000);
+	EXPECT_EQ(board::standard().get_color_occ(color::WHITE), 0x000000000000FFFF);
+	EXPECT_EQ(board::standard().get_color_occ(color::BLACK), 0xFFFF000000000000);
 }
 
 TEST(BoardTest, PieceOcc) {
-	EXPECT_EQ(Board::standard().get_piece_occ(type::PAWN), RANK_2 | RANK_7);
-	EXPECT_EQ(Board::standard().get_piece_occ(type::ROOK), (RANK_1 | RANK_8) & (FILE_A | FILE_H));
-	EXPECT_EQ(Board::standard().get_piece_occ(type::KNIGHT), (RANK_1 | RANK_8) & (FILE_B | FILE_G));
-	EXPECT_EQ(Board::standard().get_piece_occ(type::BISHOP), (RANK_1 | RANK_8) & (FILE_C | FILE_F));
-	EXPECT_EQ(Board::standard().get_piece_occ(type::QUEEN), (RANK_1 | RANK_8) & FILE_D);
-	EXPECT_EQ(Board::standard().get_piece_occ(type::KING), (RANK_1 | RANK_8) & FILE_E);
+	EXPECT_EQ(board::standard().get_piece_occ(type::PAWN), RANK_2 | RANK_7);
+	EXPECT_EQ(board::standard().get_piece_occ(type::ROOK), (RANK_1 | RANK_8) & (FILE_A | FILE_H));
+	EXPECT_EQ(board::standard().get_piece_occ(type::KNIGHT), (RANK_1 | RANK_8) & (FILE_B | FILE_G));
+	EXPECT_EQ(board::standard().get_piece_occ(type::BISHOP), (RANK_1 | RANK_8) & (FILE_C | FILE_F));
+	EXPECT_EQ(board::standard().get_piece_occ(type::QUEEN), (RANK_1 | RANK_8) & FILE_D);
+	EXPECT_EQ(board::standard().get_piece_occ(type::KING), (RANK_1 | RANK_8) & FILE_E);
 }
 
 TEST(BoardTest, GetPiece) {
-	EXPECT_EQ(Board::standard().get_piece(0), piece::make(color::WHITE, type::ROOK));
-	EXPECT_EQ(Board::standard().get_piece(4), piece::make(color::WHITE, type::KING));
+	EXPECT_EQ(board::standard().get_piece(0), piece::make(color::WHITE, type::ROOK));
+	EXPECT_EQ(board::standard().get_piece(4), piece::make(color::WHITE, type::KING));
 }
 
 TEST(BoardTest, GetTTKey) {
-	Board b = Board::standard();
+	board b = board::standard();
 	zobrist::Key k = b.get_tt_key();
 	int p = piece::make(color::BLACK, type::KNIGHT);
 
@@ -179,19 +193,19 @@ TEST(BoardTest, GetTTKey) {
 }
 
 TEST(BoardTest, AttacksOn) {
-	EXPECT_EQ(Board::standard().attacks_on(16), (1ULL << 9) | (1ULL << 1));
-	EXPECT_EQ(Board::standard().attacks_on(18), (1ULL << 9) | (1ULL << 1) | (1ULL << 11));
+	EXPECT_EQ(board::standard().attacks_on(16), (1ULL << 9) | (1ULL << 1));
+	EXPECT_EQ(board::standard().attacks_on(18), (1ULL << 9) | (1ULL << 1) | (1ULL << 11));
 }
 
 TEST(BoardTest, MaskIsAttacked) {
-	EXPECT_EQ(Board::standard().mask_is_attacked(RANK_4, color::WHITE), false);
-	EXPECT_EQ(Board::standard().mask_is_attacked(RANK_4, color::BLACK), false);
+	EXPECT_EQ(board::standard().mask_is_attacked(RANK_4, color::WHITE), false);
+	EXPECT_EQ(board::standard().mask_is_attacked(RANK_4, color::BLACK), false);
 
-	EXPECT_EQ(Board::standard().mask_is_attacked(RANK_1, color::WHITE), true);
-	EXPECT_EQ(Board::standard().mask_is_attacked(RANK_1, color::BLACK), false);
+	EXPECT_EQ(board::standard().mask_is_attacked(RANK_1, color::WHITE), true);
+	EXPECT_EQ(board::standard().mask_is_attacked(RANK_1, color::BLACK), false);
 
-	EXPECT_EQ(Board::standard().mask_is_attacked(RANK_8, color::BLACK), true);
-	EXPECT_EQ(Board::standard().mask_is_attacked(RANK_8, color::WHITE), false);
+	EXPECT_EQ(board::standard().mask_is_attacked(RANK_8, color::BLACK), true);
+	EXPECT_EQ(board::standard().mask_is_attacked(RANK_8, color::WHITE), false);
 }
 
 /**
@@ -307,30 +321,30 @@ TEST(TypeTest, TypeFromUci) {
 }
 
 /**
- * PositionTest: tests for position data type in position.cpp
+ * positionTest: tests for position data type in position.cpp
  */
 
-TEST(PositionTest, CanConstruct) {
-	(void) Position();
+TEST(positionTest, CanConstruct) {
+	(void) position();
 }
 
-TEST(PositionTest, FromFen) {
-	EXPECT_NO_THROW(Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")); /* standard FEN */
+TEST(positionTest, FromFen) {
+	EXPECT_NO_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")); /* standard FEN */
 
-	EXPECT_THROW(Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 2"), std::exception); /* too many fields */
-	EXPECT_THROW(Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0"), std::exception); /* too few fields */
+	EXPECT_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 2"), std::exception); /* too many fields */
+	EXPECT_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0"), std::exception); /* too few fields */
 }
 
-TEST(PositionTest, ToFen) {
-	EXPECT_EQ(Position().to_fen(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+TEST(positionTest, ToFen) {
+	EXPECT_EQ(position().to_fen(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
-TEST(PositionTest, GetCTM) {
-	EXPECT_EQ(Position().get_color_to_move(), color::WHITE);
+TEST(positionTest, GetCTM) {
+	EXPECT_EQ(position().get_color_to_move(), color::WHITE);
 }
 
-TEST(PositionTest, MakeMove) {
-	Position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+TEST(positionTest, MakeMove) {
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b4c3"))); // capture
@@ -338,7 +352,7 @@ TEST(PositionTest, MakeMove) {
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("c3b2"))); // check
 	EXPECT_FALSE(p1.make_matched_move(move::from_uci("a4a5"))); // illegal push
 
-	Position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("e1g1"))); // ks castle
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("c7c5"))); // jump
@@ -350,8 +364,8 @@ TEST(PositionTest, MakeMove) {
 	EXPECT_FALSE(p2.make_matched_move(move::from_uci("c5f2"))); // illegal capture
 }
 
-TEST(PositionTest, UnmakeMove) {
-	Position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+TEST(positionTest, UnmakeMove) {
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b4c3"))); // capture
@@ -365,7 +379,7 @@ TEST(PositionTest, UnmakeMove) {
 
 	EXPECT_EQ(p1.to_fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
-	Position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("e1g1"))); // ks castle
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("c7c5"))); // jump
@@ -383,16 +397,16 @@ TEST(PositionTest, UnmakeMove) {
 	EXPECT_EQ(p2.to_fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 }
 
-TEST(PositionTest, EnPassantMask) {
-	Position p;
+TEST(positionTest, EnPassantMask) {
+	position p;
 	
 	EXPECT_TRUE(p.make_matched_move(move::from_uci("a2a4")));
 	EXPECT_EQ(p.en_passant_mask(), bb::mask(square::A3));
 }
 
-TEST(PositionTest, GetTTKey) {
+TEST(positionTest, GetTTKey) {
 	/* Make and unmake some moves, check TT key is unchanged */
-	Position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 	zobrist::Key init_key = p2.get_tt_key();
 
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("e1g1"))); // ks castle
@@ -411,8 +425,8 @@ TEST(PositionTest, GetTTKey) {
 	EXPECT_EQ(p2.get_tt_key(), init_key);
 }
 
-TEST(PositionTest, Check) {
-	Position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+TEST(positionTest, Check) {
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b4c3"))); // capture
@@ -422,8 +436,8 @@ TEST(PositionTest, Check) {
 	EXPECT_TRUE(p1.check());
 }
 
-TEST(PositionTest, NumRepetitions) {
-	Position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+TEST(positionTest, NumRepetitions) {
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("c3a4")));
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b6c8")));
@@ -433,9 +447,9 @@ TEST(PositionTest, NumRepetitions) {
 	EXPECT_EQ(p1.num_repetitions(), 2);
 }
 
-TEST(PositionTest, HalfmoveClock) {
+TEST(positionTest, HalfmoveClock) {
 	/* Start with nonzero HM clock */
-	Position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 3 1");
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 3 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("c3a4")));
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b6c8")));
@@ -449,9 +463,9 @@ TEST(PositionTest, HalfmoveClock) {
 	EXPECT_EQ(p1.halfmove_clock(), 0);
 }
 
-TEST(PositionTest, PseudolegalMoves) {
+TEST(positionTest, PseudolegalMoves) {
 	/* Test a position with every type of move available! */
-	Position p("rnbqkbr1/1P2ppp1/5n1p/p1pP4/p1B5/N4N2/1BPPQPPP/R3K2R w KQq c6 0 13");
+	position p("rnbqkbr1/1P2ppp1/5n1p/p1pP4/p1B5/N4N2/1BPPQPPP/R3K2R w KQq c6 0 13");
 
 	int moves[MAX_PL_MOVES];
 	int move_count;
@@ -532,9 +546,9 @@ TEST(PositionTest, PseudolegalMoves) {
 	EXPECT_TRUE(contains(move::from_uci("e1c1"))); // QS castle
 }
 
-TEST(PositionTest, PseudolegalMovesEvasions) {
+TEST(positionTest, PseudolegalMovesEvasions) {
 	/* Test a position with every type of move available! */
-	Position p("r1b1kbnr/ppp1ppp1/2B4p/q7/8/2N2N2/PPPP1PPP/R1BQK2R b KQkq - 0 6");
+	position p("r1b1kbnr/ppp1ppp1/2B4p/q7/8/2N2N2/PPPP1PPP/R1BQK2R b KQkq - 0 6");
 
 	int moves[MAX_PL_MOVES];
 	int move_count;
@@ -561,9 +575,9 @@ TEST(PositionTest, PseudolegalMovesEvasions) {
 	EXPECT_TRUE(contains(move::from_uci("e8d7"))); // another quiet king move-- this is illegal, but OK in the qmovegen
 }
 
-TEST(PositionTest, MakeUnmakeConsistency) {
+TEST(positionTest, MakeUnmakeConsistency) {
 	// Test consistency of make/unmake move with a variety of moves
-	Position p("rnbq2r1/4b2P/p4p2/Pp1k4/2p1NQ1N/2B1P3/1PP2PP1/R3K2R w KQ b6 0 26");
+	position p("rnbq2r1/4b2P/p4p2/Pp1k4/2p1NQ1N/2B1P3/1PP2PP1/R3K2R w KQ b6 0 26");
 
 	// The above position contains several different types of moves for white:
 	//
@@ -601,7 +615,7 @@ TEST(PositionTest, MakeUnmakeConsistency) {
  * PerftTest: movegen perft testing
  */
 TEST(PerftTest, StandardPerft) {
-	Position p;
+	position p;
 	perft::results res;
 
 	res = perft::run(p, 0);
@@ -648,19 +662,10 @@ TEST(PerftTest, StandardPerft) {
 	EXPECT_EQ(res.castles, 0);
 	EXPECT_EQ(res.promotions, 0);
 	EXPECT_EQ(res.checks, 469);
-
-	res = perft::run(p, 5);
-
-	EXPECT_EQ(res.nodes, 4865609);
-	EXPECT_EQ(res.captures, 82719);
-	EXPECT_EQ(res.en_passant, 258);
-	EXPECT_EQ(res.castles, 0);
-	EXPECT_EQ(res.promotions, 0);
-	EXPECT_EQ(res.checks, 27351);
 }
 
 TEST(PerftTest, PerftKiwipete) {
-	Position p("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 	perft::results res;
 
 	res = perft::run(p, 1);
@@ -701,7 +706,7 @@ TEST(PerftTest, PerftKiwipete) {
 }
 
 TEST(PerftTest, PerftThree) {
-	Position p("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+	position p("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 	perft::results res;
 
 	res = perft::run(p, 1);
@@ -751,7 +756,7 @@ TEST(PerftTest, PerftThree) {
 }
 
 TEST(PerftTest, PerftFour) {
-	Position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+	position p("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 	perft::results res;
 
 	res = perft::run(p, 1);
@@ -792,7 +797,7 @@ TEST(PerftTest, PerftFour) {
 }
 
 TEST(PerftTest, PerftFive) {
-	Position p("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+	position p("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
 
 	perft::results res = perft::run(p, 1);
 
@@ -812,7 +817,7 @@ TEST(PerftTest, PerftFive) {
 }
 
 TEST(PerftTest, PerftSix) {
-	Position p("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
+	position p("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
 	perft::results res;
 
 	res = perft::run(p, 1);
@@ -844,12 +849,8 @@ TEST(LogTest, SetLevel) {
 
 /* Testing entry point */
 
-int run_tests(int argc, char** argv) {
+int neocortex::run_tests(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
-
-	bb::init();
-	attacks::init();
-	zobrist::init();
 
 	return RUN_ALL_TESTS();
 }

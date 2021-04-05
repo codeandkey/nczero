@@ -14,6 +14,7 @@
 #include <nczero/net.h>
 #include <nczero/pool.h>
 #include <nczero/platform.h>
+#include <nczero/tests.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -60,6 +61,18 @@ int main(int argc, char** argv) {
 	}
 
 	neocortex_info("Loaded model in %d ms\n", util::time_elapsed_ms(start_point));
+
+	if (argc > 1 && std::string(argv[1]) == "test") {
+#ifdef NCZ_DEBUG
+		// shift arguments over
+
+		argv[1] = argv[0];
+		return run_tests(argc - 1, argv + 1);
+#else
+		neocortex_error("Tests are only available on debug builds.\n");
+		return -1;
+#endif
+	}
 
 	if (argc > 1 && std::string(argv[1]) == "uci") {
 		return uci();
