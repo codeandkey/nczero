@@ -6,7 +6,7 @@ Chess engine powered with reinforcement learning.
 
 ## architecture
 
-Many techniques in this engine are inspired by the revolutionary [AlphaZero](https://arxiv.org/pdf/1712.01815.pdf) as well as the extensive [Chess Programming Wiki](https://www.chessprogramming.org).
+Many techniques in this engine are inspired by the revolutionary [AlphaZero](https://arxiv.org/pdf/1712.01815.pdf) program as well as the extensive [Chess Programming Wiki](https://www.chessprogramming.org).
 
 - Parallel Monte Carlo Tree Search
 - Bitboard move generation
@@ -24,5 +24,3 @@ Many techniques in this engine are inspired by the revolutionary [AlphaZero](htt
 To build nczero execute `./compile` in the project directory.
 
 After nczero is built you can execute it with `build/bin/nczero`.
-
-> NOTE: Building the test suite requires GoogleTest to be available on the host.
