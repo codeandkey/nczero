@@ -2,16 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#include "../src/attacks.h"
-#include "../src/bitboard.h"
-#include "../src/board.h"
-#include "../src/color.h"
-#include "../src/type.h"
-#include "../src/log.h"
-#include "../src/perft.h"
-#include "../src/piece.h"
-#include "../src/zobrist.h"
-
 using namespace neocortex;
 
 /**
@@ -854,7 +844,7 @@ TEST(LogTest, SetLevel) {
 
 /* Testing entry point */
 
-int main(int argc, char** argv) {
+int run_tests(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
 
 	bb::init();

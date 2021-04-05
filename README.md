@@ -10,22 +10,18 @@ Many techniques in this engine are inspired by the revolutionary [AlphaZero](htt
 
 - Parallel Monte Carlo Tree Search
 - Bitboard move generation
-- Incremental input layers
+- Incremental input layer updates
 
 ## dependencies
 
+- CMake 3.0+
 - GCC 8+ on \*NIX, or MSVC 15.7+ on Windows
-- [TensorFlow C API](https://www.tensorflow.org/install/lang_c)
-- [GoogleTest](https://github.com/google/googletest) to run tests
+- [LibTorch](https://pytorch.org/get-started/locally/) 1.8.1 with CMake module
+- [GoogleTest](https://github.com/google/googletest) for debug/test builds
 
 ## building
 
-**Linux**<br>
-Execute `make` in the project root to build in release mode.<br>
-Execute `make debug` to build in debug mode, and `make test` to build the test suite.<br>
-
-**Windows**<br>
-Open `neocortex.vcxproj` in Visual Studio. Build the solution in either Debug or Release mode.<br>
-To run the test suite, open `neocortex_test.vcxproj` and build in Debug mode.<br>
+To build nczero execute `./compile` in the project directory.
+After nczero is built you can execute it with `build/nczero`.
 
 > NOTE: Building the test suite requires GoogleTest to be available on the host.
