@@ -14,7 +14,6 @@
 #include <nczero/net.h>
 #include <nczero/pool.h>
 #include <nczero/platform.h>
-#include <nczero/tests.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -61,18 +60,6 @@ int main(int argc, char** argv) {
 	}
 
 	neocortex_info("Loaded model in %d ms\n", util::time_elapsed_ms(start_point));
-
-	if (argc > 1 && std::string(argv[1]) == "test") {
-#ifdef NCZ_DEBUG
-		// shift arguments over
-
-		argv[1] = argv[0];
-		return run_tests(argc - 1, argv + 1);
-#else
-		neocortex_error("Tests are only available on debug builds.\n");
-		return -1;
-#endif
-	}
 
 	if (argc > 1 && std::string(argv[1]) == "uci") {
 		return uci();
@@ -131,6 +118,10 @@ int train() {
 				}
 			}
 
+			for (int i = 0; i < 4096; ++i) {
+				output << " " << lmm[i];
+			}
+
 			// Write normalized MCTS counts for POV
 			// First get total n
 
@@ -149,7 +140,7 @@ int train() {
 				mcts_counts[src * 64 + dst] = (float) c->get_value().n / (float) total_n;
 			}
 
-			for (int i = 0; i < mcts_counts.size(); ++i) {
+			for (size_t i = 0; i < mcts_counts.size(); ++i) {
 				output << " " << mcts_counts[i];
 			}
 
@@ -165,7 +156,7 @@ int train() {
 			std::sort(node_pairs.begin(), node_pairs.end(), [&](auto& a, auto& b) { return a.first > b.first; });
 
 			neocortex_debug("==> Selecting from %d children\n", node_pairs.size());
-			for (int i = 0; i < node_pairs.size(); ++i) {
+			for (size_t i = 0; i < node_pairs.size(); ++i) {
 				node::value val = node_pairs[i].second->get_value();
 				neocortex_debug(
 					"=> %s %3.1f%% | N = %4d | Q = %3.2f | P = %3.1f%%\n",
@@ -272,7 +263,7 @@ int uci() {
 			}
 
 			if (args[2] == "Threads") {
-				if (value < 1 || value > max_threads) {
+				if (value < 1 || value > (int) max_threads) {
 					neocortex_error("Invalid number of threads (min %d, max %d).\n", 1, max_threads);
 				}
 
@@ -295,7 +286,7 @@ int uci() {
 			int wtime = -1, btime = -1;
 			int ourtime = (pos.get_color_to_move() == chess::color::WHITE) ? wtime : btime;
 
-			for (int i = 1; i < args.size(); ++i) {
+			for (size_t i = 1; i < args.size(); ++i) {
 				auto parse_arg = [&](string a, int* dst) {
 					if (i + 1 >= args.size()) {
 						neocortex_error("go(%s): expected argument", a.c_str());

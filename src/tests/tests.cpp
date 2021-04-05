@@ -11,7 +11,6 @@
 #include <nczero/chess/zobrist.h>
 
 #include <nczero/log.h>
-#include <nczero/tests.h>
 
 #include <gtest/gtest.h>
 
@@ -797,8 +796,12 @@ TEST(LogTest, SetLevel) {
 
 /* Testing entry point */
 
-int neocortex::run_tests(int argc, char** argv) {
+int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
+
+	attacks::init();
+	bb::init();
+	zobrist::init();
 
 	return RUN_ALL_TESTS();
 }

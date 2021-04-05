@@ -18,8 +18,6 @@ using namespace std;
 static int batch_size = DEFAULT_BATCH_SIZE;
 static vector<shared_ptr<worker>> workers;
 
-static void _init_workers();
-
 void pool::init(int num_threads) {
     set_num_threads(num_threads);
 }
@@ -58,7 +56,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
         } else {
             // Non-uci pretty status on stderr
             
-            for (int i = 0; i < workers.size(); ++i) {
+            for (size_t i = 0; i < workers.size(); ++i) {
                 worker::status st = workers[i]->get_status();
                 neocortex_info(
                     "%d: %s | %3d batches | %5d nodes | %5d nps\n",
@@ -70,17 +68,17 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
                 );
             }
 
-            for (int i = 0; i < workers.size(); ++i) {
+            for (size_t i = 0; i < workers.size(); ++i) {
                 fprintf(stderr, "\033[F");
             }
         }
 
         // Clear the status lines, and return the cursor to the top
-        for (int i = 0; i < workers.size(); ++i) {
-            fprintf(stderr, "\001b[2\n");
+        for (size_t i = 0; i < workers.size(); ++i) {
+            fprintf(stderr, "\u001b[2\n");
         }
 
-        for (int i = 0; i < workers.size(); ++i) {
+        for (size_t i = 0; i < workers.size(); ++i) {
             fprintf(stderr, "\033[F");
         }
 
@@ -108,7 +106,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
 	std::mt19937 rng(device());
 	std::discrete_distribution<> dist(n_dist.begin(), n_dist.end());
 
-    for (int i = 0; i < root->get_children().size(); ++i) {
+    for (size_t i = 0; i < root->get_children().size(); ++i) {
         n_dist.push_back(root->get_children()[i]->get_value().n);
     }
 

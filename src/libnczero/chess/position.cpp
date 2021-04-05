@@ -1107,7 +1107,7 @@ std::vector<int> position::legal_moves() {
 	std::vector<int> output;
 
 	// Generate legal moves
-	int moves[MAX_PL_MOVES], num_legal = 0;
+	int moves[MAX_PL_MOVES];
 	int num_pl_moves = pseudolegal_moves(moves);
 
 	for (int i = 0; i < num_pl_moves; ++i) {

@@ -18,20 +18,27 @@ endif ()
 
 set_property(GLOBAL PROPERTY DEBUG_CONFIGURATIONS Debug)
 
-# Get googletest if debug
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Compiling in debug mode. Fetching googletest..")
-    include (FetchContent)
-
-    # Fetch googletest 6c5c455 March 29, 2021
-    FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/6c5c4554ac218a8e19168edc121b1ad232015185.zip)
-
-    # Fix compiler override on Windows
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-
     # Add debug macro
     add_compile_definitions (NCZ_DEBUG)
+
+    # Enable tests build
+    enable_testing()
+
+    # Add coverage, debug flags
+    set (GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+    set (GCC_COVERAGE_LINK_FLAGS "-lgcov")
+
+    set (GCC_DEBUG_FLAGS "-g -Wall -Werror")
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
+    else ()
+        message(FATAL_ERROR "Debug builds only supported on gcc.")
+    endif ()
 else ()
     # Add release macro
     add_compile_definitions (NCZ_DEBUG)

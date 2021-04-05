@@ -48,7 +48,7 @@ void worker::job(shared_ptr<node>& root) {
             vector<nn::output> results = nn::evaluate(&board_input[0], &lmm_input[0], current_batch_size);
 
             // Apply results
-            for (int i = 0; i < results.size(); ++i) {
+            for (size_t i = 0; i < results.size(); ++i) {
                 node* dst = batch_nodes[i];
 
                 // Apply policy to new children
@@ -110,7 +110,7 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
         // Distribute batches to children
 		int total_batches = 0;
 
-		for (int i = 0; i < uct_pairs.size(); ++i) {
+		for (size_t i = 0; i < uct_pairs.size(); ++i) {
 			if (allocated <= 0) {
 				break;
 			}
