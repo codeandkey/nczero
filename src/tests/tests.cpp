@@ -321,29 +321,29 @@ TEST(TypeTest, TypeFromUci) {
 }
 
 /**
- * positionTest: tests for position data type in position.cpp
+ * PositionTest: tests for position data type in position.cpp
  */
 
-TEST(positionTest, CanConstruct) {
+TEST(PositionTest, CanConstruct) {
 	(void) position();
 }
 
-TEST(positionTest, FromFen) {
+TEST(PositionTest, FromFen) {
 	EXPECT_NO_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")); /* standard FEN */
 
 	EXPECT_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 2"), std::exception); /* too many fields */
 	EXPECT_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0"), std::exception); /* too few fields */
 }
 
-TEST(positionTest, ToFen) {
+TEST(PositionTest, ToFen) {
 	EXPECT_EQ(position().to_fen(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
-TEST(positionTest, GetCTM) {
+TEST(PositionTest, GetCTM) {
 	EXPECT_EQ(position().get_color_to_move(), color::WHITE);
 }
 
-TEST(positionTest, MakeMove) {
+TEST(PositionTest, MakeMove) {
 	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
@@ -364,7 +364,7 @@ TEST(positionTest, MakeMove) {
 	EXPECT_FALSE(p2.make_matched_move(move::from_uci("c5f2"))); // illegal capture
 }
 
-TEST(positionTest, UnmakeMove) {
+TEST(PositionTest, UnmakeMove) {
 	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
@@ -397,14 +397,14 @@ TEST(positionTest, UnmakeMove) {
 	EXPECT_EQ(p2.to_fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 }
 
-TEST(positionTest, EnPassantMask) {
+TEST(PositionTest, EnPassantMask) {
 	position p;
 	
 	EXPECT_TRUE(p.make_matched_move(move::from_uci("a2a4")));
 	EXPECT_EQ(p.en_passant_mask(), bb::mask(square::A3));
 }
 
-TEST(positionTest, GetTTKey) {
+TEST(PositionTest, GetTTKey) {
 	/* Make and unmake some moves, check TT key is unchanged */
 	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 	zobrist::Key init_key = p2.get_tt_key();
@@ -425,7 +425,7 @@ TEST(positionTest, GetTTKey) {
 	EXPECT_EQ(p2.get_tt_key(), init_key);
 }
 
-TEST(positionTest, Check) {
+TEST(PositionTest, Check) {
 	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
@@ -436,7 +436,7 @@ TEST(positionTest, Check) {
 	EXPECT_TRUE(p1.check());
 }
 
-TEST(positionTest, NumRepetitions) {
+TEST(PositionTest, NumRepetitions) {
 	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("c3a4")));
@@ -447,7 +447,7 @@ TEST(positionTest, NumRepetitions) {
 	EXPECT_EQ(p1.num_repetitions(), 2);
 }
 
-TEST(positionTest, HalfmoveClock) {
+TEST(PositionTest, HalfmoveClock) {
 	/* Start with nonzero HM clock */
 	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 3 1");
 
@@ -463,7 +463,7 @@ TEST(positionTest, HalfmoveClock) {
 	EXPECT_EQ(p1.halfmove_clock(), 0);
 }
 
-TEST(positionTest, PseudolegalMoves) {
+TEST(PositionTest, PseudolegalMoves) {
 	/* Test a position with every type of move available! */
 	position p("rnbqkbr1/1P2ppp1/5n1p/p1pP4/p1B5/N4N2/1BPPQPPP/R3K2R w KQq c6 0 13");
 
@@ -546,7 +546,7 @@ TEST(positionTest, PseudolegalMoves) {
 	EXPECT_TRUE(contains(move::from_uci("e1c1"))); // QS castle
 }
 
-TEST(positionTest, PseudolegalMovesEvasions) {
+TEST(PositionTest, PseudolegalMovesEvasions) {
 	/* Test a position with every type of move available! */
 	position p("r1b1kbnr/ppp1ppp1/2B4p/q7/8/2N2N2/PPPP1PPP/R1BQK2R b KQkq - 0 6");
 
@@ -575,7 +575,7 @@ TEST(positionTest, PseudolegalMovesEvasions) {
 	EXPECT_TRUE(contains(move::from_uci("e8d7"))); // another quiet king move-- this is illegal, but OK in the qmovegen
 }
 
-TEST(positionTest, MakeUnmakeConsistency) {
+TEST(PositionTest, MakeUnmakeConsistency) {
 	// Test consistency of make/unmake move with a variety of moves
 	position p("rnbq2r1/4b2P/p4p2/Pp1k4/2p1NQ1N/2B1P3/1PP2PP1/R3K2R w KQ b6 0 26");
 
@@ -653,15 +653,6 @@ TEST(PerftTest, StandardPerft) {
 	EXPECT_EQ(res.castles, 0);
 	EXPECT_EQ(res.promotions, 0);
 	EXPECT_EQ(res.checks, 12);
-
-	res = perft::run(p, 4);
-
-	EXPECT_EQ(res.nodes, 197281);
-	EXPECT_EQ(res.captures, 1576);
-	EXPECT_EQ(res.en_passant, 0);
-	EXPECT_EQ(res.castles, 0);
-	EXPECT_EQ(res.promotions, 0);
-	EXPECT_EQ(res.checks, 469);
 }
 
 TEST(PerftTest, PerftKiwipete) {
@@ -685,24 +676,6 @@ TEST(PerftTest, PerftKiwipete) {
 	EXPECT_EQ(res.castles, 91);
 	EXPECT_EQ(res.promotions, 0);
 	EXPECT_EQ(res.checks, 3);
-
-	res = perft::run(p, 3);
-
-	EXPECT_EQ(res.nodes, 97862);
-	EXPECT_EQ(res.captures, 17102);
-	EXPECT_EQ(res.en_passant, 45);
-	EXPECT_EQ(res.castles, 3162);
-	EXPECT_EQ(res.promotions, 0);
-	EXPECT_EQ(res.checks, 993);
-
-	res = perft::run(p, 4);
-
-	EXPECT_EQ(res.nodes, 4085603);
-	EXPECT_EQ(res.captures, 757163);
-	EXPECT_EQ(res.en_passant, 1929);
-	EXPECT_EQ(res.castles, 128013);
-	EXPECT_EQ(res.promotions, 15172);
-	EXPECT_EQ(res.checks, 25523);
 }
 
 TEST(PerftTest, PerftThree) {
@@ -744,15 +717,6 @@ TEST(PerftTest, PerftThree) {
 	EXPECT_EQ(res.castles, 0);
 	EXPECT_EQ(res.promotions, 0);
 	EXPECT_EQ(res.checks, 1680);
-
-	res = perft::run(p, 5);
-
-	EXPECT_EQ(res.nodes, 674624);
-	EXPECT_EQ(res.captures, 52051);
-	EXPECT_EQ(res.en_passant, 1165);
-	EXPECT_EQ(res.castles, 0);
-	EXPECT_EQ(res.promotions, 0);
-	EXPECT_EQ(res.checks, 52950);
 }
 
 TEST(PerftTest, PerftFour) {
@@ -785,15 +749,6 @@ TEST(PerftTest, PerftFour) {
 	EXPECT_EQ(res.castles, 0);
 	EXPECT_EQ(res.promotions, 120);
 	EXPECT_EQ(res.checks, 38);
-
-	res = perft::run(p, 4);
-
-	EXPECT_EQ(res.nodes, 422333);
-	EXPECT_EQ(res.captures, 131393);
-	EXPECT_EQ(res.en_passant, 0);
-	EXPECT_EQ(res.castles, 7795);
-	EXPECT_EQ(res.promotions, 60032);
-	EXPECT_EQ(res.checks, 15492);
 }
 
 TEST(PerftTest, PerftFive) {
@@ -810,10 +765,6 @@ TEST(PerftTest, PerftFive) {
 	res = perft::run(p, 3);
 
 	EXPECT_EQ(res.nodes, 62379);
-
-	res = perft::run(p, 4);
-
-	EXPECT_EQ(res.nodes, 2103487);
 }
 
 TEST(PerftTest, PerftSix) {
@@ -828,9 +779,6 @@ TEST(PerftTest, PerftSix) {
 
 	res = perft::run(p, 3);
 	EXPECT_EQ(res.nodes, 89890);
-
-	res = perft::run(p, 4);
-	EXPECT_EQ(res.nodes, 3894594);
 }
 
 /* LogTest: basic tests for logging functions */
