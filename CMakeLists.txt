@@ -8,6 +8,7 @@ option (DEBUG "Enable debug build")
 
 if (BUILD_TESTS)
     set(DEBUG ON)
+    message (STATUS "Will build tests")
 endif ()
 
 # Set build output
@@ -45,7 +46,7 @@ endif ()
 if (BUILD_TESTS)
     # Add coverage flags
     set (GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
-    set (GCC_COVERAGE_LINK_FLAGS "-lgcov")
+    set (GCC_COVERAGE_LINK_FLAGS "-fprofile-arcs -ftest-coverage -lgcov")
 
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")

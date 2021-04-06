@@ -1,6 +1,6 @@
 language: cpp
 compiler: gcc
-dist: bionic
+dist: focal
 
 addons:
   apt:
