@@ -5,19 +5,14 @@ install: make
 addons:
   apt:
     sources: ubuntu-toolchain-r-test
-    packages: g++-7 libgtest-dev cmake curl python3 python3-pip python3-setuptools
+    packages: g++ cmake curl python3 python3-pip python3-setuptools
 before_install:
   - pip3 install git+https://github.com/gcovr/gcovr.git
-  - cd /usr/src/gtest
-  - sudo cmake CMakeLists.txt
-  - sudo make
-  - sudo cp *.a /usr/lib
 
 script:
   - cd $TRAVIS_BUILD_DIR
-  - make CXX=g++-7
-  - make CXX=g++-7 test
-  - ./neocortex_test
+  - ./test.sh
+  - cd build
   - gcovr
   - gcovr --coveralls coveralls.json
   - echo "{" > coveralls2.json
