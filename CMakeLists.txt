@@ -14,13 +14,18 @@ endif ()
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# Write compile mode
+if (DEBUG)
+    message (STATUS "Building in DEBUG mode")
+else ()
+    message (STATUS "Building in RELEASE mode")
+endif ()
+
 # Make sure compiler is gcc if debug
 if (DEBUG)
     if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message(FATAL_ERROR "Debug builds only supported on GCC!")
     endif ()
-
-    message (STATUS "Building in DEBUG mode")
 
     # Add debug macro
     add_compile_definitions (NCZ_DEBUG)
@@ -29,8 +34,6 @@ if (DEBUG)
     set (GCC_DEBUG_FLAGS "-g -Wall -Werror -O0")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
 else ()
-    message (STATUS "Building in RELEASE mode")
-
     # Add release flags
     set (GCC_RELEASE_FLAGS "-g -Wall -Werror -O0")
 
