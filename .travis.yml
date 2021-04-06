@@ -1,5 +1,6 @@
 language: cpp
 compiler: gcc
+dist: bionic
 
 addons:
   apt:
@@ -14,6 +15,7 @@ before_install:
 
 script:
   - cd $TRAVIS_BUILD_DIR
+  - cmake --version
   - ./test.sh
   - cd build
   - gcovr
