@@ -7,6 +7,10 @@ addons:
     packages: g++ cmake curl python3 python3-pip python3-setuptools make
 before_install:
   - pip3 install git+https://github.com/gcovr/gcovr.git
+  - cd /tmp
+  - wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
+  - unzip libtorch-shared-with-deps-latest.zip
+  - cp -rv libtorch/* /usr
 
 script:
   - cd $TRAVIS_BUILD_DIR
