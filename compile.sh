@@ -3,7 +3,7 @@
 
 cd $(dirname $0)
 
-FLAGS=-DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
+CMAKEFLAGS=-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 if [ "$1" = "debug" ]; then
     FLAGS="$FLAGS -DCMAKE_BUILD_TYPE=Debug"
@@ -11,7 +11,7 @@ else
     FLAGS="$FLAGS -DCMAKE_BUILD_TYPE=Release"
 fi
 
-mkdir -p build
+mkdir build
 cd build
-cmake $FLAGS ..
+cmake $CMAKEFLAGS ..
 make
