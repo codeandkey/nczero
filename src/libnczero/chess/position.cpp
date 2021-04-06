@@ -18,33 +18,7 @@
 
 using namespace neocortex::chess;
 
-position::position() {
-	b = board::standard();
-
-	State first_state;
-
-	first_state.castle_rights = 0xF;
-	first_state.en_passant_square = square::null();
-	first_state.fullmove_number = 1;
-	first_state.halfmove_clock = 0;
-	first_state.captured_piece = piece::null();
-	first_state.captured_square = square::null();
-	first_state.last_move = move::null();
-	first_state.key = 0;
-	first_state.key ^= b.get_tt_key();
-	first_state.key ^= zobrist::castle(first_state.castle_rights);
-	first_state.in_check = 0;
-
-	ply.push_back(first_state);
-	color_to_move = color::WHITE;
-
-	input[color::WHITE].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
-	input[color::BLACK].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
-
-	_write_frame();
-}
-
-position::position(std::string fen) {
+position::position(std::string fen, bool has_input) {
 	std::vector<std::string> fields = util::split(fen, ' ');
 
 	if (fields.size() != 6) {
@@ -53,7 +27,7 @@ position::position(std::string fen) {
 
 	b = board(fields[0]);
 	color_to_move = color::from_uci(fields[1][0]);
-	
+
 	State first_state;
 
 	first_state.castle_rights = 0;
@@ -96,10 +70,14 @@ position::position(std::string fen) {
 
 	ply.push_back(first_state);
 
-	input[color::WHITE].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
-	input[color::BLACK].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+	this->has_input = has_input;
 
-	_write_frame();
+	if (has_input) {
+		input[color::WHITE].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+		input[color::BLACK].resize(nn::SQUARE_BITS * 8 * 8, 0.0f);
+
+		_write_frame();
+	}
 }
 
 std::string position::to_fen() {
@@ -243,8 +221,10 @@ bool position::make_move(int m) {
 		next_state.key ^= zobrist::black_to_move();
 	}
 
-	_push_frame();
-	_write_frame();
+	if (has_input) {
+		_push_frame();
+		_write_frame();
+	}
 
 	/* Check that king is not in attack */
 	return !test_check(!color_to_move);
@@ -309,8 +289,10 @@ int position::unmake_move() {
 		b.place(src, moved_piece);
 	}
 
-	_pop_frame();
-	_write_frame();
+	if (has_input) {
+		_pop_frame();
+		_write_frame();
+	}
 
 	return m;
 }
@@ -329,7 +311,7 @@ int position::pseudolegal_moves(int* out) {
 
 	bitboard ctm = b.get_color_occ(color_to_move);
 	bitboard opp = b.get_color_occ(!color_to_move);
-	
+
 	bitboard ep_mask = 0;
 	int ep_square = ply.back().en_passant_square;
 

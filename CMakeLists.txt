@@ -3,46 +3,53 @@ project (nczero)
 
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Debug)
+
+option (DEBUG "Enable debug build")
+
+if (BUILD_TESTS)
+    set(DEBUG ON)
+endif ()
 
 # Set build output
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Set build type
-if (CMAKE_CONFIGURATION_TYPES)
-    set (CMAKE_CONFIGURATION_TYPES Debug Release)
-elseif (NOT CMAKE_BUILD_TYPE)
-    message(FATAL_ERROR "Missing build type. Run cmake with one of the following flags:\n    -DCMAKE_BUILD_TYPE=Release\n    -DCMAKE_BUILD_TYPE=Debug")
-endif ()
+# Make sure compiler is gcc if debug
+if (DEBUG)
+    if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(FATAL_ERROR "Debug builds only supported on GCC!")
+    endif ()
 
-set_property(GLOBAL PROPERTY DEBUG_CONFIGURATIONS Debug)
+    message (STATUS "Building in DEBUG mode")
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Add debug macro
     add_compile_definitions (NCZ_DEBUG)
 
-    # Enable tests build
-    enable_testing()
+    # Add debug flags
+    set (GCC_DEBUG_FLAGS "-g -Wall -Werror -O0")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
+else ()
+    message (STATUS "Building in RELEASE mode")
 
-    # Add coverage, debug flags
+    # Add release flags
+    set (GCC_RELEASE_FLAGS "-g -Wall -Werror -O0")
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
+    endif ()
+endif ()
+
+if (BUILD_TESTS)
+    # Add coverage flags
     set (GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
     set (GCC_COVERAGE_LINK_FLAGS "-lgcov")
 
-    set (GCC_DEBUG_FLAGS "-g -Wall -Werror")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
-
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
-    else ()
-        message(FATAL_ERROR "Debug builds only supported on gcc.")
-    endif ()
-else ()
-    # Add release macro
-    add_compile_definitions (NCZ_DEBUG)
-endif ()
+    # Enable tests build
+    enable_testing()
+endif()
 
 # Find libtorch
 find_package (Torch REQUIRED)

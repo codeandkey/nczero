@@ -335,7 +335,7 @@ TEST(PositionTest, FromFen) {
 }
 
 TEST(PositionTest, ToFen) {
-	EXPECT_EQ(position().to_fen(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	EXPECT_EQ(position().to_fen(), STARTING_FEN);
 }
 
 TEST(PositionTest, GetCTM) {

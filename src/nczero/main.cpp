@@ -214,7 +214,7 @@ int uci() {
 	cout << "uciok\n";
 
 
-	chess::position pos;
+	chess::position pos(chess::STARTING_FEN, true);
 	shared_ptr<node> search_tree = make_shared<node>();
 
 	string line;

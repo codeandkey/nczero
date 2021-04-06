@@ -27,6 +27,8 @@ namespace neocortex {
 
 		constexpr int MAX_PL_MOVES = 100;
 
+		constexpr const char* STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 		class position {
 		public:
 			struct State {
@@ -43,16 +45,11 @@ namespace neocortex {
 			};
 
 			/**
-			* Constructs a standard start position.
-			*/
-			position();
-
-			/**
-			* Constructs a position for a FEN.
+			* Constructs a position from a FEN.
 			*
 			* @param fen Input FEN.
 			*/
-			position(std::string fen);
+			position(std::string fen = STARTING_FEN, bool has_input=false);
 
 			/**
 			* Converts a position to a FEN.
@@ -228,6 +225,7 @@ namespace neocortex {
 			board b;
 			std::vector<State> ply;
 			int color_to_move;
+			bool has_input;
 			std::vector<float> input[2];
 
 			// hist_ply * 8 ranks * 8 files * 2 colors * 14 bits

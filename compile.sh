@@ -5,13 +5,15 @@ cd $(dirname $0)
 
 CMAKEFLAGS=-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-if [ "$1" = "debug" ]; then
-    FLAGS="$FLAGS -DCMAKE_BUILD_TYPE=Debug"
-else
-    FLAGS="$FLAGS -DCMAKE_BUILD_TYPE=Release"
+if [ "$1" = "test" ]; then
+    FLAGS="$FLAGS -DBUILD_TESTS"
 fi
 
-mkdir build
+if [ "$1" = "debug" ]; then
+    FLAGS="$FLAGS -DDEBUG"
+fi
+
+mkdir -p build
 cd build
 cmake $CMAKEFLAGS ..
 make
