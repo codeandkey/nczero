@@ -11,3 +11,7 @@ echo "Building with $cpus threads."
 
 cd build
 ctest -j $cpus
+
+cd ..
+gcovr --exclude '.*google.*'
+gcovr --exclude '.*google.*' --coveralls result.json

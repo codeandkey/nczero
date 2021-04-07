@@ -13,7 +13,10 @@ if [ "$1" = "debug" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DDEBUG=ON"
 fi
 
+shift
+
 mkdir -p build
 cd build
-cmake $CMAKEFLAGS ..
+echo $@
+cmake $CMAKEFLAGS $@ --verbose ..
 make
