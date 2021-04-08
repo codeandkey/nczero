@@ -327,6 +327,10 @@ TEST(PositionTest, CanConstruct) {
 	(void) position();
 }
 
+TEST(PositionTest, CanConstructWithInput) {
+	(void) position(STARTING_FEN, true);
+}
+
 TEST(PositionTest, FromFen) {
 	EXPECT_NO_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")); /* standard FEN */
 
