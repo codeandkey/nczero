@@ -635,6 +635,14 @@ TEST(PositionTest, Dump) {
 	p.dump();
 }
 
+TEST(PositionTest, LegalMoves) {
+	position p;
+
+	std::vector<move> moves = p.legal_moves();
+
+	EXPECT_EQ(moves.size(), 20);
+}
+
 /**
  * PerftTest: movegen perft testing
  */
