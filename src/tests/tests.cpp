@@ -398,7 +398,7 @@ TEST(PositionTest, UnmakeMove) {
 
 TEST(PositionTest, EnPassantMask) {
 	position p;
-	
+
 	EXPECT_TRUE(p.make_matched_move(move::from_uci("a2a4")));
 	EXPECT_EQ(p.en_passant_mask(), bb::mask(square::A3));
 }
@@ -792,6 +792,16 @@ TEST(LogTest, SetLevel) {
 	log::set_level(log::DEBUG);
 
 	EXPECT_EQ(log::get_level(), log::DEBUG);
+}
+
+TEST(LogTest, InfoHello) {
+	log::set_level(log::DEBUG);
+	neocortex_info("Hello from logs!\n");
+}
+
+TEST(LogTest, LogLevel) {
+	log::set_level(log::ERR);
+	neocortex_info("Not displayed :(");
 }
 
 /* Testing entry point */
