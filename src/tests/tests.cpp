@@ -352,7 +352,7 @@ TEST(PositionTest, GetCTM) {
 }
 
 TEST(PositionTest, MakeMove) {
-	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", true);
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b4c3"))); // capture
@@ -360,7 +360,7 @@ TEST(PositionTest, MakeMove) {
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("c3b2"))); // check
 	EXPECT_FALSE(p1.make_matched_move(move::from_uci("a4a5"))); // illegal push
 
-	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", true);
 
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("e1g1"))); // ks castle
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("c7c5"))); // jump
@@ -373,7 +373,7 @@ TEST(PositionTest, MakeMove) {
 }
 
 TEST(PositionTest, UnmakeMove) {
-	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p1("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", true);
 
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("a2a4"))); // jump
 	EXPECT_TRUE(p1.make_matched_move(move::from_uci("b4c3"))); // capture
@@ -387,7 +387,7 @@ TEST(PositionTest, UnmakeMove) {
 
 	EXPECT_EQ(p1.to_fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
-	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	position p2("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", true);
 
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("e1g1"))); // ks castle
 	EXPECT_TRUE(p2.make_matched_move(move::from_uci("c7c5"))); // jump
