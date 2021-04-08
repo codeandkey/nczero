@@ -173,7 +173,7 @@ bool position::make_move(int m) {
 	}
 
 	// Test if pawn move to reset hmc
-	if (b.get_piece_occ(type::PAWN) & bb::mask(src)) {
+	if (b.get_piece_occ(type::PAWN) & bb::mask(dst)) {
 		next_state.halfmove_clock = 0;
 	}
 
