@@ -638,7 +638,7 @@ TEST(PositionTest, Dump) {
 TEST(PositionTest, LegalMoves) {
 	position p;
 
-	std::vector<move> moves = p.legal_moves();
+	std::vector<int> moves = p.legal_moves();
 
 	EXPECT_EQ(moves.size(), 20);
 }
