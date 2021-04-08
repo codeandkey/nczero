@@ -13,5 +13,5 @@ cd build
 ctest -j $cpus
 
 cd ..
-gcovr --exclude '.*google.*'
-gcovr --exclude '.*google.*' --coveralls result.json
+gcovr -f '.*libnczero.*'
+gcovr -f '.*libnczero.*' --coveralls result.json
