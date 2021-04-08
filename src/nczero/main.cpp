@@ -81,7 +81,7 @@ int train() {
 		if (filesystem::exists(game_path)) continue;
 		neocortex_info("Starting game %d/%d\n", i + 1, NUM_GAMES);
 
-		chess::position pos;
+		chess::position pos(chess::STARTING_FEN, true);
 		std::ofstream output(game_path);
 
 		if (!output) {

@@ -205,7 +205,7 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
     }
 
     // Write board input
-    memcpy(&board_input[current_batch_size * 8 * 8 * nn::SQUARE_BITS], &pos.get_input(), sizeof(float) * 8 * 8 * nn::SQUARE_BITS);
+    memcpy(&board_input[current_batch_size * 8 * 8 * nn::SQUARE_BITS], &pos.get_input()[0], sizeof(float) * 8 * 8 * nn::SQUARE_BITS);
 
     // Store new children
     new_children.push_back(tmp_new_children);
