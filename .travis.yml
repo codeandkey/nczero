@@ -4,7 +4,6 @@ dist: focal
 
 addons:
   apt:
-    sources: ubuntu-toolchain-r-test
     packages: g++ cmake curl python3 python3-pip python3-setuptools make
 before_install:
   - pip3 install git+https://github.com/gcovr/gcovr.git
@@ -17,9 +16,9 @@ script:
   - cd $TRAVIS_BUILD_DIR
   - cmake --version
   - ./test.sh
-  - echo "{" > coveralls2.json
+  - echo "{" > coveralls.json
   - "echo \"\\\"service_name\\\": \\\"travis-ci\\\",\" >> coveralls2.json"
   - "echo \"\\\"service_job_id\\\": \\\"$TRAVIS_JOB_ID\\\",\" >> coveralls2.json"
-  - tail -c+2 coveralls.json >> coveralls2.json
-  - cat coveralls2.json
-  - "curl -F 'json_file=@coveralls2.json' https://coveralls.io/api/v1/jobs"
+  - tail -c+2 result.json >> coveralls.json
+  - cat coveralls.json
+  - "curl -F 'json_file=@coveralls.json' https://coveralls.io/api/v1/jobs"
