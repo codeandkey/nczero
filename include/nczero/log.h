@@ -10,8 +10,8 @@
 #include <iostream>
 #include <mutex>
 
-#include "util.h"
 #include "platform.h"
+#include "timer.h"
 
 #ifdef NEOCORTEX_WIN32
 #include <Windows.h>
@@ -98,7 +98,7 @@ namespace neocortex {
 			}
 
 			/* Write timestamp tag */
-			fprintf(stderr, "%s ", neocortex::util::timestring().c_str());
+			fprintf(stderr, "%s ", neocortex::timer::timestring().c_str());
 
 			if (color_supported) {
 #if defined NEOCORTEX_WIN32
@@ -127,7 +127,7 @@ namespace neocortex {
 			fprintf(stderr, "%s > ", level_strings[level]);
 
 			/* Write content */
-			fprintf(stderr, "%s", neocortex::util::format(message, args...).c_str());
+			fprintf(stderr, message.c_str(), args...);
 
 			/* Write color reset */
 			if (color_supported) {

@@ -10,7 +10,6 @@
 #include <nczero/chess/position.h>
 #include <nczero/log.h>
 #include <nczero/net.h>
-#include <nczero/util.h>
 
 #include <cassert>
 #include <climits>
@@ -19,10 +18,16 @@
 using namespace neocortex::chess;
 
 position::position(std::string fen, bool has_input) {
-	std::vector<std::string> fields = util::split(fen, ' ');
+	std::string field;
+	std::vector<std::string> fields;
+	std::stringstream ss(fen);
+
+	while (std::getline(ss, field, ' ')) {
+		fields.push_back(field);
+	}
 
 	if (fields.size() != 6) {
-		throw util::fmterr("Invalid FEN: expected 6 fields, parsed %d", fields.size());
+		throw std::runtime_error("Invalid FEN: invalid field count");
 	}
 
 	b = board(fields[0]);
@@ -423,7 +428,7 @@ int position::pseudolegal_moves(int* out) {
 
 	/* Queen moves */
 	bitboard queens = ctm & b.get_piece_occ(type::QUEEN);
-	
+
 	while (queens) {
 		int src = bb::poplsb(queens);
 		bitboard atk = attacks::queen(src, b.get_global_occ());

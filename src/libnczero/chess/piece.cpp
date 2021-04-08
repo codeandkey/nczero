@@ -8,7 +8,6 @@
 #include <nczero/chess/color.h>
 #include <nczero/chess/piece.h>
 #include <nczero/chess/type.h>
-#include <nczero/util.h>
 
 #include <cctype>
 

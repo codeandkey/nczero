@@ -9,11 +9,11 @@
 #include <nczero/chess/color.h>
 #include <nczero/chess/type.h>
 #include <nczero/log.h>
-#include <nczero/util.h>
 
 #include <cassert>
 #include <cctype>
 #include <vector>
+#include <sstream>
 
 using namespace neocortex::chess;
 
@@ -35,29 +35,31 @@ board::board() {
 }
 
 board::board(std::string uci) : board() {
-	std::vector<std::string> ranks = util::split(uci, '/');
-
-	if (ranks.size() != 8) {
-		throw util::fmterr("Invalid UCI: expected 8 ranks, parsed %d", ranks.size());
-	}
+	std::stringstream ss(uci);
+	std::string rank;
 
 	int r = 8;
-	for (auto rank : ranks) {
+
+	while (std::getline(ss, rank, '/')) {
 		--r;
 		int f = 0;
+
+		if (r < 0) {
+			throw std::runtime_error("Invalid UCI: invalid rank count");
+		}
 
 		for (auto c : rank) {
 			if (isdigit(c)) {
 				for (int j = 0; j < (c - '0'); ++j) {
 					if (f >= 8) {
-						throw util::fmterr("Invalid UCI: overflow in %s", rank.c_str());
+						throw std::runtime_error("Invalid UCI: overflow in rank");
 					}
 
 					state[square::at(r, f++)] = piece::null();
 				}
 			} else {
 				if (f >= 8) {
-					throw util::fmterr("Invalid UCI: overflow in %s", rank.c_str());
+					throw std::runtime_error("Invalid UCI: overflow in rank");
 				}
 
 				place(square::at(r, f++), piece::from_uci(c));
@@ -65,8 +67,12 @@ board::board(std::string uci) : board() {
 		}
 
 		if (f != 8) {
-			throw util::fmterr("Invalid UCI: not enough pieces in %s", rank.c_str());
+			throw std::runtime_error("Invalid UCI: not enough pieces");
 		}
+	}
+
+	if (r != 0) {
+		throw std::runtime_error("Invalid UCI: invalid rank count");
 	}
 }
 

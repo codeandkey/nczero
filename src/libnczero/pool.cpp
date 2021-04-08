@@ -1,6 +1,6 @@
 #include <nczero/log.h>
 #include <nczero/pool.h>
-#include <nczero/util.h>
+#include <nczero/timer.h>
 #include <nczero/worker.h>
 
 #include <algorithm>
@@ -23,7 +23,7 @@ void pool::init(int num_threads) {
 }
 
 int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool uci) {
-    util::time_point starttime = util::time_now();
+    timer::time_point starttime = timer::time_now();
 
     // Start workers.
     for (auto& w : workers) {
@@ -31,7 +31,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
     }
 
     while (1) {
-        int elapsed = util::time_elapsed_ms(starttime);
+        int elapsed = timer::time_elapsed_ms(starttime);
         int node_count = 0, batch_count = 0, batch_avg = 0, exec_avg = 0;
 
         if (elapsed >= maxtime) {
@@ -55,7 +55,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
             cout << "info time " << elapsed << " nodes " << node_count << " nps " << nps << "\n";
         } else {
             // Non-uci pretty status on stderr
-            
+
             for (size_t i = 0; i < workers.size(); ++i) {
                 worker::status st = workers[i]->get_status();
                 neocortex_info(
@@ -86,7 +86,7 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
 
         // Reset timer if no nodes have been searched yet
         if (node_count == 0) {
-            starttime = util::time_now();
+            starttime = timer::time_now();
         }
     }
 

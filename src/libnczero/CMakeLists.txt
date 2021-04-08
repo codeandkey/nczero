@@ -15,7 +15,7 @@ set (
     net.cpp
     node.cpp
     pool.cpp
-    util.cpp
+    timer.cpp
     worker.cpp
 )
 
@@ -38,7 +38,7 @@ set (
     ${INCLUDE_DIR}/nczero/net.h
     ${INCLUDE_DIR}/nczero/node.h
     ${INCLUDE_DIR}/nczero/pool.h
-    ${INCLUDE_DIR}/nczero/util.h
+    ${INCLUDE_DIR}/nczero/timer.h
     ${INCLUDE_DIR}/nczero/worker.h
 )
 

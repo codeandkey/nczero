@@ -11,7 +11,6 @@
 #include <nczero/chess/piece.h>
 #include <nczero/chess/square.h>
 #include <nczero/chess/type.h>
-#include <nczero/util.h>
 
 #include <cassert>
 

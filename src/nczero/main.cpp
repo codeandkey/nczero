@@ -50,16 +50,16 @@ int main(int argc, char** argv) {
 
 	pool::init(max_threads);
 
-	util::time_point start_point = util::time_now();
+	timer::time_point start_point = timer::time_now();
 
 	try {
 		nn::init();
-	} catch(std::exception& e) { 
+	} catch(std::exception& e) {
 		neocortex_error("Failed to load model: %s\n", e.what());
 		return 1;
 	}
 
-	neocortex_info("Loaded model in %d ms\n", util::time_elapsed_ms(start_point));
+	neocortex_info("Loaded model in %d ms\n", timer::time_elapsed_ms(start_point));
 
 	if (argc > 1 && std::string(argv[1]) == "uci") {
 		return uci();
@@ -74,7 +74,7 @@ int train() {
 	for (int i = 0; i < NUM_GAMES; ++i) {
 		// Search for existing game path
 		filesystem::path game_path = nn::MODEL_DIR_PATH;
-		
+
 		game_path /= nn::MODEL_LATEST_NAME;
 		game_path /= std::to_string(i);
 

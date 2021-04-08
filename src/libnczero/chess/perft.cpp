@@ -7,46 +7,60 @@
 
 #include <nczero/chess/perft.h>
 #include <nczero/log.h>
-#include <nczero/util.h>
+#include <nczero/timer.h>
 
 #include <cassert>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 using namespace neocortex::chess;
+using namespace std;
 
 static perft::results current_results;
 static void perft_movegen(position& p, int depth);
 
-std::string perft::results::header() {
+string perft::results::header() {
 	return "| depth |     nodes |   captures |   checks | castles |   time |       nps |\n";
 }
 
-std::string perft::results::to_row(int depth) {
-	return util::format("| %5d | %9d | %10d | %8d | %7d | %6.2f | %9d |\n", depth, nodes, captures, checks, castles, totaltime, nps);
+string perft::results::to_row(int depth) {
+	ostringstream out;
+
+	out << "|";
+	out << " "	<< setw(5) << depth << " |";
+	out << " "	<< setw(9) << nodes << " |";
+	out << " "	<< setw(10) << captures << " |";
+	out << " "	<< setw(8) << checks << " |";
+	out << " "	<< setw(7) << castles << " |";
+	out << " "	<< setw(6) << setprecision(2) << totaltime << " |";
+	out << " "	<< setw(9) << nps << " |";
+
+	return out.str();
 }
 
 perft::results perft::run(position& p, int depth) {
 	if (depth < 0) {
-		throw util::fmterr("Invalid perft depth %d", depth);
+		throw runtime_error("Invalid perft depth");
 	}
 
 	current_results = perft::results();
 
-	util::time_point now = util::time_now();
+	timer::time_point now = timer::time_now();
 
 	perft_movegen(p, depth);
 
-	current_results.totaltime = util::time_elapsed(now);
+	current_results.totaltime = timer::time_elapsed(now);
 	current_results.nps = (unsigned long) (current_results.nodes / current_results.totaltime);
 
 	return current_results;
 }
 
-void perft::start(position& p, int depth, std::ostream& out) {
-	std::cout << "| depth |     nodes |   captures |   checks | castles |   time |       nps |\n";
+void perft::start(position& p, int depth, ostream& out) {
+	cout << "| depth |     nodes |   captures |   checks | castles |   time |       nps |\n";
 
 	for (int i = 1; i <= depth; ++i) {
-		std::cout << perft::run(p, i).to_row(i);
+		cout << perft::run(p, i).to_row(i);
 	}
 }
 
@@ -59,7 +73,7 @@ void perft_movegen(position& p, int depth) {
 		if (p.castle()) current_results.castles++;
 		if (p.en_passant()) current_results.en_passant++;
 		if (p.promotion()) current_results.promotions++;
-	
+
 		return;
 	}
 
