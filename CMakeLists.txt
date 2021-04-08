@@ -4,7 +4,8 @@ project (nczero)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option (DEBUG "Enable debug build")
+option (DEBUG "Enable debug build" OFF)
+option (BUILD_TESTS "Build tests" OFF)
 
 if (BUILD_TESTS)
     set(DEBUG ON)

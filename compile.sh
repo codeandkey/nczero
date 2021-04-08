@@ -7,13 +7,13 @@ CMAKEFLAGS=-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 if [ "$1" = "test" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DBUILD_TESTS=ON"
+    shift
 fi
 
 if [ "$1" = "debug" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DDEBUG=ON"
+    shift
 fi
-
-shift
 
 mkdir -p build
 cd build
