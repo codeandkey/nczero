@@ -39,17 +39,24 @@ bool node::backprop_terminal(float tv) {
     }
 }
 
-bool node::set_children(std::vector<shared_ptr<node>> new_children) {
-    if (flag_has_children.exchange(true)) {
-        return false;
-    }
-
+void node::set_children(std::vector<shared_ptr<node>> new_children) {
     children = new_children;
-    return true;
 }
 
 bool node::has_children() {
     return flag_has_children;
+}
+
+bool node::try_claim() {
+    return !claimed.exchange(true);
+}
+
+bool node::is_claimed() {
+    return claimed;
+}
+
+void node::unclaim() {
+    claimed = false;
 }
 
 void node::backprop(float value) {

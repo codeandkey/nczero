@@ -56,8 +56,9 @@ void worker::job(shared_ptr<node>& root) {
                     child->apply_policy(results[i].policy);
                 }
 
-                if (!dst->set_children(new_children[i])) continue;
+                dst->set_children(new_children[i]);
                 dst->backprop(results[i].value);
+                dst->unclaim();
 
                 status_mutex.lock();
                 ++current_status.node_count;
@@ -92,6 +93,10 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
         return 0;
     }
 
+    if (root->is_claimed()) {
+        return 0;
+    }
+
     if (root->has_children()) {
         // Continue selecting
 
@@ -102,7 +107,7 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
         for (auto& child : root->get_children()) {
             float uct = child->get_uct();
             uct_total += uct;
-            uct_pairs.push_back(make_pair(child, uct));       
+            uct_pairs.push_back(make_pair(child, uct));
         }
 
         sort(uct_pairs.begin(), uct_pairs.end(), [](auto& a, auto& b) { return a.second > b.second; });
@@ -156,6 +161,11 @@ int worker::make_batch(shared_ptr<node>& root, int allocated) {
         ++current_status.node_count;
         status_mutex.unlock();
 
+        return 0;
+    }
+
+    // Try to claim node
+    if (!root->try_claim()) {
         return 0;
     }
 

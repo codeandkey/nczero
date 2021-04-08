@@ -61,7 +61,7 @@ namespace neocortex {
              */
             void set_terminal(int result);
 
-            bool set_children(std::vector<shared_ptr<node>> new_children);
+            void set_children(std::vector<shared_ptr<node>> new_children);
 
             /**
              * Finds a child with action <action>, sets its parent to nullptr
@@ -76,6 +76,25 @@ namespace neocortex {
              * Gets the UCT of this node.
              */
             float get_uct();
+
+			/**
+			 * Tries to claim the node. Returns true if successful.
+			 *
+			 * @return true if node is now claimed by caller, false otherwise
+			 */
+			bool try_claim();
+
+			/**
+			 * Returns true if this node is claimed, false otherwise
+			 *
+			 * @return true if node is claimed, false otherwise
+			 */
+			bool is_claimed();
+
+			/**
+			 * Unclaims the node.
+			 */
+			void unclaim();
 
             /**
              * Backpropagates a cached terminal value if there is one,
@@ -124,7 +143,7 @@ namespace neocortex {
             int pov, action, terminal;
             float p, total_p;
             bool is_terminal;
-			atomic<bool> flag_has_children;
+			atomic<bool> flag_has_children, claimed;
 
             shared_ptr<node> parent;
 
