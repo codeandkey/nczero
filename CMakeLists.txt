@@ -32,11 +32,11 @@ if (DEBUG)
     add_compile_definitions (NCZ_DEBUG)
 
     # Add debug flags
-    set (GCC_DEBUG_FLAGS "-g -Wall -Werror -O0")
+    set (GCC_DEBUG_FLAGS "-g -Wall -Werror -Wno-format-security -O0")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
 else ()
     # Add release flags
-    set (GCC_RELEASE_FLAGS "-g -Wall -Werror -O0")
+    set (GCC_RELEASE_FLAGS "-g -Wall -Werror -Wno-format-security -O0")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_DEBUG_FLAGS}")
