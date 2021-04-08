@@ -338,6 +338,11 @@ TEST(PositionTest, FromFen) {
 	EXPECT_THROW(position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0"), std::exception); /* too few fields */
 }
 
+TEST(PositionTest, GetBoard) {
+	position p;
+	p.get_board();
+}
+
 TEST(PositionTest, ToFen) {
 	EXPECT_EQ(position().to_fen(), STARTING_FEN);
 }
