@@ -610,6 +610,17 @@ TEST(PositionTest, MakeUnmakeConsistency) {
 	}
 }
 
+TEST(PositionTest, LastMove) {
+	position p;
+	p.make_matched_move(move::from_uci("e2e4"));
+	EXPECT_EQ(move::to_uci(p.last_move()), "e2e4");
+}
+
+TEST(PositionTest, GetInput) {
+	position p;
+	p.get_input();
+}
+
 /**
  * PerftTest: movegen perft testing
  */
