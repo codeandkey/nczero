@@ -630,6 +630,11 @@ TEST(PositionTest, GetInput) {
 	p.get_input();
 }
 
+TEST(PositionTest, Dump) {
+	position p;
+	p.dump();
+}
+
 /**
  * PerftTest: movegen perft testing
  */
