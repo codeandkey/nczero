@@ -16,7 +16,7 @@ Many techniques used in this engine are inspired by the revolutionary [AlphaZero
 
 - CMake 3.14+
 - GCC 8+ on \*NIX, or MSVC 15.7+ on Windows
-- [LibTorch](https://pytorch.org/get-started/locally/) 1.8.1
+- [LibTorch](https://pytorch.org/get-started/locally/) 1.8.1+
 - *(optional)* [GoogleTest](https://github.com/google/googletest) for tests
 
 ## building
