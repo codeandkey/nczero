@@ -26,10 +26,16 @@ To compile NcZero:
 ```bash
 ./compile.sh
 ```
+Test results and coverage will be output to the console.
 
 The compiled binary is then available at
 ```bash
 build/bin/nczero
+```
+
+To run the test suite:
+```bash
+./test.sh
 ```
 
 ## installation
