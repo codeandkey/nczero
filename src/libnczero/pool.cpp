@@ -30,6 +30,8 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
         w->start(root, p);
     }
 
+    bool first = true;
+
     while (1) {
         int elapsed = timer::time_elapsed_ms(starttime);
         int node_count = 0, batch_count = 0, batch_avg = 0, exec_avg = 0;
@@ -56,30 +58,69 @@ int pool::search(shared_ptr<node>& root, int maxtime, chess::position& p, bool u
         } else {
             // Non-uci pretty status on stderr
 
+            // Rewind console if update
+            if (!first) {
+                for (size_t i = 0; i < workers.size() + 6; ++i) {
+                    fprintf(stderr, "\033[F");
+                }
+            } else {
+                first = false;
+            }
+
+            // Table top border
+            int width = 54;
+            cout << "+" << string(width - 2, '-') << "+\n";
+
+            // Table headers
+            cout << "| ID  | batches | nodes |    nps |    bavg |    eavg |\n";
+
+            // Separating border
+            cout << "+" << string(width - 2, '-') << "+\n";
+
+            int btotal = 0;
+            int ndtotal = 0;
+            int npstotal = 0;
+            int bavg = 0;
+            int eavg = 0;
+
+            // Compute totals so we can display them first
             for (size_t i = 0; i < workers.size(); ++i) {
                 worker::status st = workers[i]->get_status();
-                neocortex_info(
-                    "%d: %s | %3d batches | %5d nodes | %5d nps\n",
-                    i,
-                    st.code.c_str(),
-                    st.batch_count,
-                    st.node_count,
-                    st.node_count * 1000 / (elapsed + 1)
-                );
+
+                btotal += st.batch_count;
+                ndtotal += st.node_count;
+                npstotal += st.node_count * 1000 / (elapsed + 1);
+                bavg += st.batch_avg;
+                eavg += st.exec_avg;
             }
 
+            // Total row
+            cout << "| ALL";
+            cout << " | " << setw(7) << btotal;
+            cout << " | " << setw(5) << ndtotal;
+            cout << " | " << setw(6) << npstotal;
+            cout << " | " << setw(5) << (bavg / workers.size()) << "ms";
+            cout << " | " << setw(5) << (eavg / workers.size()) << "ms";
+            cout << " |\n";
+
+            // Separating border
+            cout << "+" << string(width - 2, '-') << "+\n";
+
+            // Rows
             for (size_t i = 0; i < workers.size(); ++i) {
-                fprintf(stderr, "\033[F");
+                worker::status st = workers[i]->get_status();
+
+                cout << "| " << setw(3) << i;
+                cout << " | " << setw(7) << st.batch_count;
+                cout << " | " << setw(5) << st.node_count;
+                cout << " | " << setw(6) << st.node_count * 1000 / (elapsed + 1);
+                cout << " | " << setw(5) << st.batch_avg << "ms";
+                cout << " | " << setw(5) << st.exec_avg << "ms";
+                cout << " |\n";
             }
-        }
-
-        // Clear the status lines, and return the cursor to the top
-        for (size_t i = 0; i < workers.size(); ++i) {
-            fprintf(stderr, "\u001b[2\n");
-        }
-
-        for (size_t i = 0; i < workers.size(); ++i) {
-            fprintf(stderr, "\033[F");
+            
+            // Bottom border
+            cout << "+" << string(width - 2, '-') << "+\n";
         }
 
         this_thread::sleep_for(chrono::duration<int, std::milli>(POOL_INFO_DELAY));
