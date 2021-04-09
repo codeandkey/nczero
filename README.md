@@ -22,8 +22,13 @@ GCC 8+ is required for debug and test builds.
 
 ## building from source
 
+To compile NcZero:
 ```bash
 ./compile.sh
+```
+
+The compiled binary is then available at
+```bash
 build/bin/nczero
 ```
 
