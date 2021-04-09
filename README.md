@@ -24,16 +24,16 @@ GCC 8+ is required for debug and test builds.
 
 ### Build and run
 ```bash
-./compile.sh
-build/bin/nczero
+$ ./compile.sh
+$ build/bin/nczero
 ```
 
 ### Install
 ```bash
-sudo cp build/bin/nczero /usr/bin
+$ cp build/bin/nczero /usr/bin
 ```
 
 ### Run tests
 ```bash
-./test.sh
+$ ./test.sh
 ```
