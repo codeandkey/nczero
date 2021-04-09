@@ -18,6 +18,8 @@ Many techniques used in this engine are inspired by the revolutionary [AlphaZero
 - [LibTorch](https://pytorch.org/get-started/locally/) 1.8.1+
 - *(optional)* [GoogleTest](https://github.com/google/googletest) for tests
 
+GCC 8+ is required for debug and test builds.
+
 ## building
 
 To build nczero execute `./compile` in the project directory.
