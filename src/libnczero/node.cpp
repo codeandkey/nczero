@@ -17,6 +17,7 @@ node::node(shared_ptr<node> parent, int action, int pov) {
     terminal = 1;
     p = total_p = 0.0f;
     flag_has_children = false;
+    claimed = false;
 }
 
 float node::get_uct() {
