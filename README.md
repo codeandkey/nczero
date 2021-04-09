@@ -20,8 +20,15 @@ Many techniques used in this engine are inspired by the revolutionary [AlphaZero
 
 GCC 8+ is required for debug and test builds.
 
-## building
+## building from source
 
-To build nczero execute `./compile` in the project directory.
+```bash
+./compile.sh
+build/bin/nczero
+```
 
-After nczero is built you can execute it with `build/bin/nczero`.
+## installation
+
+```bash
+sudo cp build/bin/nczero /usr/bin
+```
