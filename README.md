@@ -26,7 +26,6 @@ To compile NcZero:
 ```bash
 ./compile.sh
 ```
-Test results and coverage will be output to the console.
 
 The compiled binary is then available at
 ```bash
