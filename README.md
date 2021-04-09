@@ -23,17 +23,17 @@ GCC 8+ is required for debug and test builds.
 ## Building from source
 
 ### Build and run
-```bash
+```
 $ ./compile.sh
 $ build/bin/nczero
 ```
 
 ### Install
-```bash
-$ cp build/bin/nczero /usr/bin
+```
+# cp build/bin/nczero /usr/bin
 ```
 
 ### Run tests
-```bash
+```
 $ ./test.sh
 ```
