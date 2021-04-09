@@ -4,7 +4,7 @@
 
 Chess engine powered with reinforcement learning.
 
-## architecture
+## Architecture
 
 Many techniques used in this engine are inspired by the revolutionary [AlphaZero](https://arxiv.org/pdf/1712.01815.pdf) program as well as the extensive [Chess Programming Wiki](https://www.chessprogramming.org).
 
@@ -12,7 +12,7 @@ Many techniques used in this engine are inspired by the revolutionary [AlphaZero
 - Bitboard move generation
 - Incremental input layer updates
 
-## dependencies
+## Dependencies
 
 - CMake 3.14+
 - [LibTorch](https://pytorch.org/get-started/locally/) 1.8.1+
@@ -20,25 +20,20 @@ Many techniques used in this engine are inspired by the revolutionary [AlphaZero
 
 GCC 8+ is required for debug and test builds.
 
-## building from source
+## Building from source
 
-To compile NcZero:
+### Build and run
 ```bash
 ./compile.sh
-```
-
-The compiled binary is then available at
-```bash
 build/bin/nczero
 ```
 
-To run the test suite:
-```bash
-./test.sh
-```
-
-## installation
-
+### Install
 ```bash
 sudo cp build/bin/nczero /usr/bin
+```
+
+### Run tests
+```bash
+./test.sh
 ```
